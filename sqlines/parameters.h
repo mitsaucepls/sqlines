@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,42 +14,41 @@
  * limitations under the License.
  */
 
-// Parameters class - Loads parameters from command line 
+// Parameters class - Loads parameters from command line
 
 #ifndef sqlines_parameters_h
 #define sqlines_parameters_h
 
 #include <map>
 
-#define PARAMETER_START_TOKEN	'-'				
+#define PARAMETER_START_TOKEN '-'
 
 // Option to print help on available parameters (? is also suported)
-#define HELP_PARAMETER			"-?"				
+#define HELP_PARAMETER "-?"
 
 typedef std::map<std::string, std::string> ParametersMap;
 typedef std::pair<std::string, std::string> ParametersPair;
 
 //////////////////////////////////////////////////////////////////////
 
-class Parameters
-{
-	// Key-value map of parameters
-	ParametersMap _map;
+class Parameters {
+  // Key-value map of parameters
+  ParametersMap _map;
 
 public:
-	// Load parameters from command line and configuration file
-	int Load(int argc, char** argv);
+  // Load parameters from command line and configuration file
+  int Load(int argc, char **argv);
 
-	// Get the value by key
-	char* Get(const char *key);
+  // Get the value by key
+  char *Get(const char *key);
 
-	ParametersMap& GetMap() { return _map; }
+  ParametersMap &GetMap() { return _map; }
 
 private:
-	// Load command line parameters
-	int LoadCommandLine(int argc, char** argv);
-	// Load parameters from a string
-	int LoadString(const char *input);
+  // Load command line parameters
+  int LoadCommandLine(int argc, char **argv);
+  // Load parameters from a string
+  int LoadString(const char *input);
 };
 
 #endif // sqlines_parameters_h

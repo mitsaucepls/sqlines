@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-#include <QtGui/QApplication>
 #include <QStyle>
 #include <QStyleFactory>
+#include <QtGui/QApplication>
 
 #include "mainwindow.h"
 
-#define SQLINES_STUDIO_VERSION      "SQLines Studio"
+#define SQLINES_STUDIO_VERSION "SQLines Studio"
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
+int main(int argc, char *argv[]) {
+  QApplication a(argc, argv);
+  MainWindow w;
 
-    w.setWindowTitle(SQLINES_STUDIO_VERSION);
-    w.showMaximized();
+  w.setWindowTitle(SQLINES_STUDIO_VERSION);
+  w.showMaximized();
 
-    return a.exec();
+  return a.exec();
 }

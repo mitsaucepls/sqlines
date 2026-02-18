@@ -14,90 +14,80 @@
  * limitations under the License.
  */
 
-#include <QCoreApplication>
-#include <QStringList>
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QFileInfo>
+#include <QStringList>
 
 #include "coreprocess.hpp"
 
 using namespace model;
 
-CoreProcess::processError::processError(const QString& errorString,
-                                        const QString& log,
+CoreProcess::processError::processError(const QString &errorString,
+                                        const QString &log,
                                         int exitCode) noexcept
- :  std::runtime_error(errorString.toStdString()),
-    processLog(log),
-    processExitCode(exitCode) {}
+    : std::runtime_error(errorString.toStdString()), processLog(log),
+      processExitCode(exitCode) {}
 
-QString CoreProcess::processError::errorType() const noexcept
-{
-    return { std::runtime_error::what() };
+QString CoreProcess::processError::errorType() const noexcept {
+  return {std::runtime_error::what()};
 }
 
-const QString& CoreProcess::processError::log() const noexcept
-{
-    return this->processLog;
+const QString &CoreProcess::processError::log() const noexcept {
+  return this->processLog;
 }
 
-int CoreProcess::processError::exitCode() const noexcept
-{
-    return this->processExitCode;
+int CoreProcess::processError::exitCode() const noexcept {
+  return this->processExitCode;
 }
 
-CoreProcess::CoreProcess(const QString& processPath) noexcept
- :  processPath(processPath) {}
+CoreProcess::CoreProcess(const QString &processPath) noexcept
+    : processPath(processPath) {}
 
-void CoreProcess::run(const QStringList& arguments)
-{
-    if (!QFileInfo::exists(this->processPath)) {
-        throw noProcess();
-    }
+void CoreProcess::run(const QStringList &arguments) {
+  if (!QFileInfo::exists(this->processPath)) {
+    throw noProcess();
+  }
 
-    this->process.start(this->processPath, arguments);
-    this->process.waitForFinished();
+  this->process.start(this->processPath, arguments);
+  this->process.waitForFinished();
 
-    this->processLog = this->process.readAllStandardOutput();
-    this->processExitCode = this->process.exitCode();
+  this->processLog = this->process.readAllStandardOutput();
+  this->processExitCode = this->process.exitCode();
 
-    this->process.close();
+  this->process.close();
 
-    if (this->process.exitStatus() == QProcess::CrashExit) {
-        errorOccurred();
-    }
+  if (this->process.exitStatus() == QProcess::CrashExit) {
+    errorOccurred();
+  }
 }
 
-const QString& CoreProcess::log() const noexcept
-{
-    return this->processLog;
-}
+const QString &CoreProcess::log() const noexcept { return this->processLog; }
 
-void CoreProcess::errorOccurred()
-{
-    QProcess::ProcessError errorType = this->process.error();
-    
-    if (errorType == QProcess::FailedToStart) {
-        throw processError("SQLines converter failed to start",
-                           this->processLog, this->processExitCode);
-        
-    } else if (errorType == QProcess::Crashed) {
-        throw processError("SQLines converter crashed",
-                           this->processLog, this->processExitCode);
-    }
-    
-    if (this->processExitCode == -1) {
-        throw processError("No source / target file",
-                           this->processLog, this->processExitCode);
-        
-    } else if (this->processExitCode == -2) {
-        throw processError("Incorrect contents of the source file",
-                           this->processLog, this->processExitCode);
-        
-    } else if (this->processExitCode == -3) {
-        throw processError("Error while writing to the target file",
-                           this->processLog, this->processExitCode);
-    }
-    
-    throw processError("Unknown error",
+void CoreProcess::errorOccurred() {
+  QProcess::ProcessError errorType = this->process.error();
+
+  if (errorType == QProcess::FailedToStart) {
+    throw processError("SQLines converter failed to start", this->processLog,
+                       this->processExitCode);
+
+  } else if (errorType == QProcess::Crashed) {
+    throw processError("SQLines converter crashed", this->processLog,
+                       this->processExitCode);
+  }
+
+  if (this->processExitCode == -1) {
+    throw processError("No source / target file", this->processLog,
+                       this->processExitCode);
+
+  } else if (this->processExitCode == -2) {
+    throw processError("Incorrect contents of the source file",
                        this->processLog, this->processExitCode);
+
+  } else if (this->processExitCode == -3) {
+    throw processError("Error while writing to the target file",
+                       this->processLog, this->processExitCode);
+  }
+
+  throw processError("Unknown error", this->processLog, this->processExitCode);
 }

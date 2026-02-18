@@ -14,98 +14,89 @@
  * limitations under the License.
  */
 
-#include <algorithm>
-#include <vector>
 #include <QFileInfo>
 #include <QTabBar>
+#include <algorithm>
+#include <vector>
 
 #include "tabwidget.hpp"
 
-ui::TabWidget::TabWidget(QWidget* parent) noexcept
- :  QTabWidget(parent)
-{
-    setMovable(true);
-    setTabsClosable(true);
+ui::TabWidget::TabWidget(QWidget *parent) noexcept : QTabWidget(parent) {
+  setMovable(true);
+  setTabsClosable(true);
 }
 
-void ui::TabWidget::addTab(ui::CentralWidget& widget) noexcept
-{
-    auto setTabTitle = [this]()->QString {
-        std::vector<int> tabNumbers;
-        for (auto i = 0; i < count(); i++) {
-            QString title = tabText(i);
-            title.erase(title.cbegin(), title.cbegin() + 4); // Delete "Tab "
-            bool ok;
-            int number = title.toInt(&ok);
-            if (ok) { // The tab had a standard title "Tab i"
-                tabNumbers.push_back(number);
-            }
-        }
-        std::sort(tabNumbers.begin(), tabNumbers.end());
-        
-        if (tabNumbers.empty()) {
-            return "Tab 1";
-        }
-        auto i = 0;
-        for (; i < tabNumbers.size(); i++) {
-            // The tab numbers must be ordered
-            if (tabNumbers[i] != i + 1) {
-                break;
-            }
-        }
-        return "Tab " + QString::number(i + 1);
-    };
-
-    insertTab(count(), &widget, setTabTitle());
-    setCurrentIndex(count() - 1);
-
-    widget.focusOn(CentralWidget::FieldInFocus::SourceField);
-}
-
-ui::CentralWidget& ui::TabWidget::getWidget(int tabIndex)
-{
-    if (tabIndex > count() - 1) {
-        throw noTab();
+void ui::TabWidget::addTab(ui::CentralWidget &widget) noexcept {
+  auto setTabTitle = [this]() -> QString {
+    std::vector<int> tabNumbers;
+    for (auto i = 0; i < count(); i++) {
+      QString title = tabText(i);
+      title.erase(title.cbegin(), title.cbegin() + 4); // Delete "Tab "
+      bool ok;
+      int number = title.toInt(&ok);
+      if (ok) { // The tab had a standard title "Tab i"
+        tabNumbers.push_back(number);
+      }
     }
-    return *dynamic_cast<CentralWidget*>(widget(tabIndex));
-}
+    std::sort(tabNumbers.begin(), tabNumbers.end());
 
-const ui::CentralWidget& ui::TabWidget::currentWidget() const
-{
-    if (count() == 0) {
-        throw noTab();
+    if (tabNumbers.empty()) {
+      return "Tab 1";
     }
-    return *dynamic_cast<CentralWidget*>(widget(currentIndex()));
-}
-
-ui::CentralWidget& ui::TabWidget::currentWidget()
-{
-    if (count() == 0) {
-        throw noTab();
+    auto i = 0;
+    for (; i < tabNumbers.size(); i++) {
+      // The tab numbers must be ordered
+      if (tabNumbers[i] != i + 1) {
+        break;
+      }
     }
-    return *dynamic_cast<CentralWidget*>(widget(currentIndex()));
+    return "Tab " + QString::number(i + 1);
+  };
+
+  insertTab(count(), &widget, setTabTitle());
+  setCurrentIndex(count() - 1);
+
+  widget.focusOn(CentralWidget::FieldInFocus::SourceField);
 }
 
-QString ui::TabWidget::tabTitle(int tabIndex) const noexcept
-{
-    return tabText(tabIndex);
+ui::CentralWidget &ui::TabWidget::getWidget(int tabIndex) {
+  if (tabIndex > count() - 1) {
+    throw noTab();
+  }
+  return *dynamic_cast<CentralWidget *>(widget(tabIndex));
 }
 
-void ui::TabWidget::setTabTitle(int tabIndex, const QString& tabTitle) noexcept
-{
-    setTabText(tabIndex, tabTitle);
+const ui::CentralWidget &ui::TabWidget::currentWidget() const {
+  if (count() == 0) {
+    throw noTab();
+  }
+  return *dynamic_cast<CentralWidget *>(widget(currentIndex()));
 }
 
-void ui::TabWidget::nextTab() noexcept
-{
-    if (currentIndex() != count()) {
-        setCurrentIndex(currentIndex() + 1);
-    }
+ui::CentralWidget &ui::TabWidget::currentWidget() {
+  if (count() == 0) {
+    throw noTab();
+  }
+  return *dynamic_cast<CentralWidget *>(widget(currentIndex()));
 }
 
-void ui::TabWidget::prevTab() noexcept
-{
-    if (currentIndex() - 1 != -1) {
-        setCurrentIndex(currentIndex() - 1);
-    }
+QString ui::TabWidget::tabTitle(int tabIndex) const noexcept {
+  return tabText(tabIndex);
+}
+
+void ui::TabWidget::setTabTitle(int tabIndex,
+                                const QString &tabTitle) noexcept {
+  setTabText(tabIndex, tabTitle);
+}
+
+void ui::TabWidget::nextTab() noexcept {
+  if (currentIndex() != count()) {
+    setCurrentIndex(currentIndex() + 1);
+  }
+}
+
+void ui::TabWidget::prevTab() noexcept {
+  if (currentIndex() - 1 != -1) {
+    setCurrentIndex(currentIndex() - 1);
+  }
 }

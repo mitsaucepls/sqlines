@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,27 +19,28 @@
 #ifndef sqlines_java_h
 #define sqlines_java_h
 
-#define JAVA_PREPEND(token, string) _sqlparser->PrependNoFormat(token, string, L##string, sizeof(string) - 1)
+#define JAVA_PREPEND(token, string)                                            \
+  _sqlparser->PrependNoFormat(token, string, L##string, sizeof(string) - 1)
 
 class SqlParser;
 
-class Java
-{
-	SqlParser *_sqlparser;
+class Java {
+  SqlParser *_sqlparser;
 
 public:
-	Java();
+  Java();
 
-	// Set data type for procedure OUT parameters
-	void SetOutDataType(Token *data_type);
+  // Set data type for procedure OUT parameters
+  void SetOutDataType(Token *data_type);
 
-	// Map SQL data type name (without length, precision, scale) to Java object type
-	const char *MapSqlDataType(const char *name);
+  // Map SQL data type name (without length, precision, scale) to Java object
+  // type
+  const char *MapSqlDataType(const char *name);
 
-	// Create a string literal from a set of tokens (support multi-line strings)
-	void MakeStringLiteral(Token *start, Token *end);
+  // Create a string literal from a set of tokens (support multi-line strings)
+  void MakeStringLiteral(Token *start, Token *end);
 
-	void SetParser(SqlParser *parser) { _sqlparser = parser; }
+  void SetParser(SqlParser *parser) { _sqlparser = parser; }
 };
 
 #endif // sqlines_java_h

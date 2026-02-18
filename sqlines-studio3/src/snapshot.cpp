@@ -18,22 +18,17 @@
 
 using namespace model;
 
-QString Snapshot::operator[](const QString& key) const noexcept
-{
-    const auto& item = this->state.find(key);
-    if (item != this->state.cend()) {
-        return (*item).second;
-    } else {
-        return {};
-    }
+QString Snapshot::operator[](const QString &key) const noexcept {
+  const auto &item = this->state.find(key);
+  if (item != this->state.cend()) {
+    return (*item).second;
+  } else {
+    return {};
+  }
 }
 
-QString& Snapshot::operator[](const QString& key) noexcept
-{
-    return this->state[key];
+QString &Snapshot::operator[](const QString &key) noexcept {
+  return this->state[key];
 }
 
-void Snapshot::clear() noexcept
-{
-    this->state.clear();
-}
+void Snapshot::clear() noexcept { this->state.clear(); }

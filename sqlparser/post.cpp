@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,37 +16,37 @@
 
 // Post processing
 
+#include "sqlparser.h"
 #include <stdio.h>
 #include <string.h>
-#include "sqlparser.h"
 
 // Post conversion when all tokens processed
-void SqlParser::Post()
-{
-	if(_target != SQL_GREENPLUM)
-		return;
+void SqlParser::Post() {
+  if (_target != SQL_GREENPLUM)
+    return;
 
-	Book *bookmark = _bookmarks.GetFirstNoCurrent();
+  Book *bookmark = _bookmarks.GetFirstNoCurrent();
 
-	// Iterate through bookmarks
-	while(bookmark != NULL)
-	{
-		// Greenplum
-		if(_target == SQL_GREENPLUM)
-		{
-			// Add DISTRIBUTED RANDOMLY for tables that are still without DISTRIBUTED clause
-			if(bookmark->type == BOOK_CTC_ALL_END && bookmark->distributed_by == false)
-				Append(bookmark->book, " DISTRIBUTED RANDOMLY", L" DISTRIBUTED RANDOMLY", 21);
-			else
-			// Comment out indexes
-			if(bookmark->type == BOOK_CI_START)
-				Prepend(bookmark->book, "/* ", L"/* ", 3);
-			else
-			// Comment out indexes
-			if(bookmark->type == BOOK_CI_END)
-				Append(bookmark->book, " */", L" */", 3);
-		}
-		
-		bookmark = bookmark->next;
-	}
+  // Iterate through bookmarks
+  while (bookmark != NULL) {
+    // Greenplum
+    if (_target == SQL_GREENPLUM) {
+      // Add DISTRIBUTED RANDOMLY for tables that are still without DISTRIBUTED
+      // clause
+      if (bookmark->type == BOOK_CTC_ALL_END &&
+          bookmark->distributed_by == false)
+        Append(bookmark->book, " DISTRIBUTED RANDOMLY",
+               L" DISTRIBUTED RANDOMLY", 21);
+      else
+        // Comment out indexes
+        if (bookmark->type == BOOK_CI_START)
+          Prepend(bookmark->book, "/* ", L"/* ", 3);
+        else
+          // Comment out indexes
+          if (bookmark->type == BOOK_CI_END)
+            Append(bookmark->book, " */", L" */", 3);
+    }
+
+    bookmark = bookmark->next;
+  }
 }

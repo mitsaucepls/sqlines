@@ -14,46 +14,43 @@
  * limitations under the License.
  */
 
-#include <QVBoxLayout>
-#include <QPixmap>
 #include <QLabel>
+#include <QPixmap>
+#include <QVBoxLayout>
 
 #include "aboutwidget.hpp"
 
 using namespace ui;
 
-AboutWidget::AboutWidget(QWidget* parent) noexcept
- :  QDialog(parent)
-{
-    paint();
+AboutWidget::AboutWidget(QWidget *parent) noexcept : QDialog(parent) {
+  paint();
 }
 
-void AboutWidget::paint() noexcept
-{
-    setWindowTitle("About SQLines Studio");
-    setFixedSize(250, 350);
-    
-    auto layout = new QVBoxLayout(this);
+void AboutWidget::paint() noexcept {
+  setWindowTitle("About SQLines Studio");
+  setFixedSize(250, 350);
 
-    auto logoLabel = new QLabel;
-    logoLabel->setPixmap(QPixmap(":/logo.png"));
-    logoLabel->setAlignment(Qt::AlignCenter);
+  auto layout = new QVBoxLayout(this);
 
-    auto appNameLabel = new QLabel;
-    appNameLabel->setText("<b>SQLines Studio</b>\n");
-    appNameLabel->setAlignment(Qt::AlignCenter);
-    
-    auto infoLabel = new QLabel;
-    infoLabel->setText("Version: 3.0\n© 2021 SQLines");
-    infoLabel->setAlignment(Qt::AlignCenter);
-    
-    auto copyrightLabel = new QLabel;
-    copyrightLabel->setText("All rights reserved.");
-    copyrightLabel->setAlignment(Qt::AlignCenter);
-    
-    layout->addWidget(logoLabel);
-    layout->addWidget(appNameLabel);
-    layout->addWidget(infoLabel);
-    layout->addWidget(copyrightLabel);
-    layout->setAlignment(Qt::AlignCenter);
+  auto logoLabel = new QLabel;
+  logoLabel->setPixmap(QPixmap(":/logo.png"));
+  logoLabel->setAlignment(Qt::AlignCenter);
+
+  auto appNameLabel = new QLabel;
+  appNameLabel->setText("<b>SQLines Studio</b>\n");
+  appNameLabel->setAlignment(Qt::AlignCenter);
+
+  auto infoLabel = new QLabel;
+  infoLabel->setText("Version: 3.0\n© 2021 SQLines");
+  infoLabel->setAlignment(Qt::AlignCenter);
+
+  auto copyrightLabel = new QLabel;
+  copyrightLabel->setText("All rights reserved.");
+  copyrightLabel->setAlignment(Qt::AlignCenter);
+
+  layout->addWidget(logoLabel);
+  layout->addWidget(appNameLabel);
+  layout->addWidget(infoLabel);
+  layout->addWidget(copyrightLabel);
+  layout->setAlignment(Qt::AlignCenter);
 }

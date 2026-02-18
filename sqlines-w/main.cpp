@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-#include <QtGui/QApplication>
 #include <QStyle>
 #include <QStyleFactory>
+#include <QtGui/QApplication>
 
 #include "mainwindow.h"
 
-#define SQLINESW_VERSION      "SQLines SQL Converter"
+#define SQLINESW_VERSION "SQLines SQL Converter"
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
+int main(int argc, char *argv[]) {
+  QApplication a(argc, argv);
+  MainWindow w;
 
-    // Do not allow to resize the main window
-    w.setFixedWidth(900);
-    w.setFixedHeight(565);
+  // Do not allow to resize the main window
+  w.setFixedWidth(900);
+  w.setFixedHeight(565);
 
-    w.setWindowTitle(SQLINESW_VERSION);
-    w.show();
+  w.setWindowTitle(SQLINESW_VERSION);
+  w.show();
 
-    return a.exec();
+  return a.exec();
 }

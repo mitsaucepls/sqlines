@@ -14,286 +14,258 @@
  * limitations under the License.
  */
 
-#include <utility>
-#include <QList>
-#include <QUrl>
+#include <QColor>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QDir>
+#include <QList>
+#include <QMessageBox>
 #include <QPainter>
-#include <QColor>
 #include <QTextBlock>
 #include <QTextFormat>
-#include <QMessageBox>
+#include <QUrl>
+#include <utility>
 
 #include "inputfield.hpp"
 
 using namespace ui;
 using namespace uiImpl;
 
-LineNumberArea::LineNumberArea(ui::InputFieldWidget& editor) noexcept
-:   QWidget(&editor), editor(editor) {}
+LineNumberArea::LineNumberArea(ui::InputFieldWidget &editor) noexcept
+    : QWidget(&editor), editor(editor) {}
 
-int LineNumberArea::width() const noexcept
-{
-    auto digits = 1;
-    auto max = qMax(1, this->editor.blockCount());
-    while (max >= 10) {
-        max /= 10;
-        digits++;
-    }
-    auto space = 0 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+int LineNumberArea::width() const noexcept {
+  auto digits = 1;
+  auto max = qMax(1, this->editor.blockCount());
+  while (max >= 10) {
+    max /= 10;
+    digits++;
+  }
+  auto space = 0 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
 
-    return space;
+  return space;
 }
 
-QSize LineNumberArea::sizeHint() const
-{
-    return { width(), 0 };
-}
+QSize LineNumberArea::sizeHint() const { return {width(), 0}; }
 
-void LineNumberArea::paintEvent(QPaintEvent* event)
-{
-    this->editor.lineNumberAreaPaintEvent(event);
+void LineNumberArea::paintEvent(QPaintEvent *event) {
+  this->editor.lineNumberAreaPaintEvent(event);
 }
 
 InputFieldWidget::InputFieldWidget(bool lineNumberEnabled,
                                    bool highlighterEnabled,
                                    bool wrappingEnabled,
-                                   QWidget* parent) noexcept
- :  QPlainTextEdit(parent),
-    lineNumberArea(nullptr),
-    highlighter(nullptr)
-{
-    makeLineNumberArea();
+                                   QWidget *parent) noexcept
+    : QPlainTextEdit(parent), lineNumberArea(nullptr), highlighter(nullptr) {
+  makeLineNumberArea();
 
-    if (!lineNumberEnabled) {
-        this->lineNumberArea->hide();
-    }
-    if (highlighterEnabled) {
-        makeHighlighter();
-    }
-    if (!wrappingEnabled) {
-        setLineWrapMode(NoWrap);
-    }
+  if (!lineNumberEnabled) {
+    this->lineNumberArea->hide();
+  }
+  if (highlighterEnabled) {
+    makeHighlighter();
+  }
+  if (!wrappingEnabled) {
+    setLineWrapMode(NoWrap);
+  }
 }
 
 // Make the line number area
-void InputFieldWidget::lineNumberAreaPaintEvent(QPaintEvent* event) noexcept
-{
-    QPainter painter(this->lineNumberArea);
-    
-    QTextBlock block = firstVisibleBlock();
-    int blockNumber = block.blockNumber();
-    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
-    int bottom = top + qRound(blockBoundingRect(block).height());
-    
-    while (block.isValid() && top <= event->rect().bottom()) {
-        if (block.isVisible() && bottom >= event->rect().top()) {
-            QColor color = QColor(Qt::lightGray).lighter(70);
-            painter.setPen(std::move(color));
-            painter.drawText(0,
-                             top,
-                             this->lineNumberArea->width(),
-                             fontMetrics().height(),
-                             Qt::AlignLeft,
-                             QString::number(blockNumber + 1));
-        }
-        
-        block = block.next();
-        top = bottom;
-        bottom = top + qRound(blockBoundingRect(block).height());
-        blockNumber++;
+void InputFieldWidget::lineNumberAreaPaintEvent(QPaintEvent *event) noexcept {
+  QPainter painter(this->lineNumberArea);
+
+  QTextBlock block = firstVisibleBlock();
+  int blockNumber = block.blockNumber();
+  int top =
+      qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+  int bottom = top + qRound(blockBoundingRect(block).height());
+
+  while (block.isValid() && top <= event->rect().bottom()) {
+    if (block.isVisible() && bottom >= event->rect().top()) {
+      QColor color = QColor(Qt::lightGray).lighter(70);
+      painter.setPen(std::move(color));
+      painter.drawText(0, top, this->lineNumberArea->width(),
+                       fontMetrics().height(), Qt::AlignLeft,
+                       QString::number(blockNumber + 1));
     }
+
+    block = block.next();
+    top = bottom;
+    bottom = top + qRound(blockBoundingRect(block).height());
+    blockNumber++;
+  }
 }
 
 // Line number area setting
-void InputFieldWidget::resizeEvent(QResizeEvent* event)
-{
-    QPlainTextEdit::resizeEvent(event);
+void InputFieldWidget::resizeEvent(QResizeEvent *event) {
+  QPlainTextEdit::resizeEvent(event);
 
-    QRect rect = contentsRect();
-    if (this->lineNumberArea != nullptr) {
-        this->lineNumberArea->setGeometry(QRect(rect.left(),
-                                                rect.top(),
-                                                this->lineNumberArea->width(),
-                                                rect.height()));
-    }
+  QRect rect = contentsRect();
+  if (this->lineNumberArea != nullptr) {
+    this->lineNumberArea->setGeometry(QRect(
+        rect.left(), rect.top(), this->lineNumberArea->width(), rect.height()));
+  }
 }
 
 // Line number area setting
-void InputFieldWidget::updateLineNumberArea(const QRect& rect, int dy) noexcept
-{
-    if (dy) {
-        this->lineNumberArea->scroll(0, dy);
-    } else {
-        this->lineNumberArea->update(0, rect.y(),
-                                     this->lineNumberArea->width(), rect.height());
-    }
-    
-    if (rect.contains(viewport()->rect())) {
-        updateLineNumberAreaWidth(0);
-    }
-}
+void InputFieldWidget::updateLineNumberArea(const QRect &rect,
+                                            int dy) noexcept {
+  if (dy) {
+    this->lineNumberArea->scroll(0, dy);
+  } else {
+    this->lineNumberArea->update(0, rect.y(), this->lineNumberArea->width(),
+                                 rect.height());
+  }
 
-// Line number area setting
-void InputFieldWidget::updateLineNumberAreaWidth(int) noexcept
-{
-    setViewportMargins(this->lineNumberArea->width(), 0, 0, 0);
-}
-
-// Line number area setting
-void InputFieldWidget::highlightCurrentLine() noexcept
-{
-    QList<QTextEdit::ExtraSelection> extraSelections;
-
-    if (!isReadOnly() && !document()->isEmpty()) {
-        QColor lineColor = QColor(Qt::lightGray).lighter(122);
-        QTextEdit::ExtraSelection selection;
-        selection.format.setBackground(std::move(lineColor));
-        selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-        selection.cursor = textCursor();
-        selection.cursor.clearSelection();
-        
-        extraSelections.append(selection);
-    }
-     
-    setExtraSelections(extraSelections);
-}
-
-void InputFieldWidget::makeLineNumberArea() noexcept
-{
-    this->lineNumberArea = new uiImpl::LineNumberArea(*this);
-
-    connect(this, &InputFieldWidget::blockCountChanged,
-            this, &InputFieldWidget::updateLineNumberAreaWidth);
-    
-    connect(this, &InputFieldWidget::updateRequest,
-            this, &InputFieldWidget::updateLineNumberArea);
-    
-    connect(this, &InputFieldWidget::cursorPositionChanged,
-            this, &InputFieldWidget::highlightCurrentLine);
-
+  if (rect.contains(viewport()->rect())) {
     updateLineNumberAreaWidth(0);
+  }
 }
 
-void InputFieldWidget::showLineNumberArea() noexcept
-{
-    if (this->lineNumberArea != nullptr) {
-        this->lineNumberArea->show();
-    }
+// Line number area setting
+void InputFieldWidget::updateLineNumberAreaWidth(int) noexcept {
+  setViewportMargins(this->lineNumberArea->width(), 0, 0, 0);
 }
 
-void InputFieldWidget::hideLineNumberArea() noexcept
-{
-    if (this->lineNumberArea != nullptr) {
-        this->lineNumberArea->hide();
-    }
+// Line number area setting
+void InputFieldWidget::highlightCurrentLine() noexcept {
+  QList<QTextEdit::ExtraSelection> extraSelections;
+
+  if (!isReadOnly() && !document()->isEmpty()) {
+    QColor lineColor = QColor(Qt::lightGray).lighter(122);
+    QTextEdit::ExtraSelection selection;
+    selection.format.setBackground(std::move(lineColor));
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    selection.cursor = textCursor();
+    selection.cursor.clearSelection();
+
+    extraSelections.append(selection);
+  }
+
+  setExtraSelections(extraSelections);
 }
 
-void InputFieldWidget::makeHighlighter() noexcept
-{
-    if (this->highlighter == nullptr) {
-        this->highlighter = new uiImpl::Highlighter(*document());
-    }
+void InputFieldWidget::makeLineNumberArea() noexcept {
+  this->lineNumberArea = new uiImpl::LineNumberArea(*this);
+
+  connect(this, &InputFieldWidget::blockCountChanged, this,
+          &InputFieldWidget::updateLineNumberAreaWidth);
+
+  connect(this, &InputFieldWidget::updateRequest, this,
+          &InputFieldWidget::updateLineNumberArea);
+
+  connect(this, &InputFieldWidget::cursorPositionChanged, this,
+          &InputFieldWidget::highlightCurrentLine);
+
+  updateLineNumberAreaWidth(0);
 }
 
-void InputFieldWidget::removeHighlighter() noexcept
-{
-    if (this->highlighter != nullptr) {
-        delete this->highlighter;
-        this->highlighter = nullptr;
-    }
+void InputFieldWidget::showLineNumberArea() noexcept {
+  if (this->lineNumberArea != nullptr) {
+    this->lineNumberArea->show();
+  }
+}
+
+void InputFieldWidget::hideLineNumberArea() noexcept {
+  if (this->lineNumberArea != nullptr) {
+    this->lineNumberArea->hide();
+  }
+}
+
+void InputFieldWidget::makeHighlighter() noexcept {
+  if (this->highlighter == nullptr) {
+    this->highlighter = new uiImpl::Highlighter(*document());
+  }
+}
+
+void InputFieldWidget::removeHighlighter() noexcept {
+  if (this->highlighter != nullptr) {
+    delete this->highlighter;
+    this->highlighter = nullptr;
+  }
 }
 
 SourceFieldWidget::SourceFieldWidget(bool lineNumberEnabled,
                                      bool highlighterEnabled,
                                      bool wrappingEnabled,
-                                     QWidget* parent) noexcept
- :  InputFieldWidget(lineNumberEnabled,
-                     highlighterEnabled,
-                     wrappingEnabled,
-                     parent) {}
+                                     QWidget *parent) noexcept
+    : InputFieldWidget(lineNumberEnabled, highlighterEnabled, wrappingEnabled,
+                       parent) {}
 
 // Drag & drop setting
-bool SourceFieldWidget::canInsertFromMimeData(const QMimeData* source) const
-{
-    if (source->hasUrls()) {
-        QUrl url = source->urls().first();
-        QFileInfo file(url.toLocalFile());
-        return !file.isDir() && !file.isExecutable() && !file.isBundle();
-    
-    } else {
-        return source->hasText();
-    }
+bool SourceFieldWidget::canInsertFromMimeData(const QMimeData *source) const {
+  if (source->hasUrls()) {
+    QUrl url = source->urls().first();
+    QFileInfo file(url.toLocalFile());
+    return !file.isDir() && !file.isExecutable() && !file.isBundle();
+
+  } else {
+    return source->hasText();
+  }
 }
 
 // Drag & drop setting
-void SourceFieldWidget::insertFromMimeData(const QMimeData* source)
-{
-    // Copy data from dragged file
-    if (source->hasUrls()) {
-        QUrl url = source->urls().first();
-        QFile file(url.toLocalFile());
+void SourceFieldWidget::insertFromMimeData(const QMimeData *source) {
+  // Copy data from dragged file
+  if (source->hasUrls()) {
+    QUrl url = source->urls().first();
+    QFile file(url.toLocalFile());
 
-        if (file.size() > 2'000'000) /* 2 MB */ {
-            QMessageBox::critical(this,
-                                  "Filesystem error",
-                                  "Unable to open source file.\n"
-                                  "Path: " + file.fileName() +
-                                  "\n\nThe file is too large."
-                                  "\nUse the Conversion utility(Tools->Conversion utility) "
-                                  "for large files.");
-            return;
-        }
-        if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this,
-                                  "Filesystem error",
-                                  "Unable to open source file.\n\n"
-                                  "Path: " + file.fileName() + "\n" +
-                                  file.errorString() + ".");
-            return;
-        }
-        
-        QTextStream stream(&file);
-        clear();
-        setPlainText(stream.readAll());
-        emit fileOpened(file.fileName());
-        
-    // Copy dragged text
-    } else if (source->hasText()) {
-        if (source->text().size() > 2'000'000) /* 2 MB */ {
-            QMessageBox::critical(this,
-                                  "Filesystem error",
-                                  "The text cannot be copied.\n\n"
-                                  "The text is too large."
-                                  "\nUse the Conversion utility(Tools->Conversion utility) "
-                                  "for large files.");
-            return;
-        }
-
-        insertPlainText(source->text());
+    if (file.size() > 2'000'000) /* 2 MB */ {
+      QMessageBox::critical(
+          this, "Filesystem error",
+          "Unable to open source file.\n"
+          "Path: " +
+              file.fileName() +
+              "\n\nThe file is too large."
+              "\nUse the Conversion utility(Tools->Conversion utility) "
+              "for large files.");
+      return;
     }
+    if (!file.open(QIODevice::ReadOnly)) {
+      QMessageBox::critical(this, "Filesystem error",
+                            "Unable to open source file.\n\n"
+                            "Path: " +
+                                file.fileName() + "\n" + file.errorString() +
+                                ".");
+      return;
+    }
+
+    QTextStream stream(&file);
+    clear();
+    setPlainText(stream.readAll());
+    emit fileOpened(file.fileName());
+
+    // Copy dragged text
+  } else if (source->hasText()) {
+    if (source->text().size() > 2'000'000) /* 2 MB */ {
+      QMessageBox::critical(
+          this, "Filesystem error",
+          "The text cannot be copied.\n\n"
+          "The text is too large."
+          "\nUse the Conversion utility(Tools->Conversion utility) "
+          "for large files.");
+      return;
+    }
+
+    insertPlainText(source->text());
+  }
 }
 
 ui::TargetFieldWidget::TargetFieldWidget(bool lineNumberEnabled,
                                          bool highlighterEnabled,
                                          bool wrappingEnabled,
-                                         QWidget* parent) noexcept
- :  ui::InputFieldWidget(lineNumberEnabled,
-                         highlighterEnabled,
-                         wrappingEnabled,
-                         parent)
-{
-    setAcceptDrops(false);
-    hide();
-    
-    auto makeActive = [this] {
-        if (!this->document()->isEmpty()) {
-            show();
-        }
-    };
-    
-    connect(this, &InputFieldWidget::textChanged,
-            this, makeActive);
+                                         QWidget *parent) noexcept
+    : ui::InputFieldWidget(lineNumberEnabled, highlighterEnabled,
+                           wrappingEnabled, parent) {
+  setAcceptDrops(false);
+  hide();
+
+  auto makeActive = [this] {
+    if (!this->document()->isEmpty()) {
+      show();
+    }
+  };
+
+  connect(this, &InputFieldWidget::textChanged, this, makeActive);
 }

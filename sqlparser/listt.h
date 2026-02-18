@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,236 +14,216 @@
  * limitations under the License.
  */
 
-// ListT<T> class - Stores a list of T values, linked to each other in a chain 
+// ListT<T> class - Stores a list of T values, linked to each other in a chain
 
 #ifndef sqlines_listt_h
 #define sqlines_listt_h
 
-template <class T> class ListT
-{
-	// The first element in the list
-	T *first;
-	// The last element in the list
-	T *last;
-	// The current element (for list client classes that iterate through the list)
-	T *current;
-	// Next element (it is set in advance as current can be removed after retrieval)
-	T *nextl;
+template <class T> class ListT {
+  // The first element in the list
+  T *first;
+  // The last element in the list
+  T *last;
+  // The current element (for list client classes that iterate through the list)
+  T *current;
+  // Next element (it is set in advance as current can be removed after
+  // retrieval)
+  T *nextl;
 
-	// Total number of items in the list
-	int count;
-	// Specifies whether items in the list are external or not (should be deleted in destructor or not)
-	bool referencedItems;
-
-public:
-
-	// Next and previous when the list is included into another list
-	ListT<T> *next; 
-	ListT<T> *prev;
+  // Total number of items in the list
+  int count;
+  // Specifies whether items in the list are external or not (should be deleted
+  // in destructor or not)
+  bool referencedItems;
 
 public:
-	// Template constructor
-	ListT()
-	{
-		first = NULL;
-		last = NULL;
-		current = NULL;
-		nextl = NULL;
-		count = 0;
-		referencedItems = false;
+  // Next and previous when the list is included into another list
+  ListT<T> *next;
+  ListT<T> *prev;
 
-		next = NULL;
-		prev = NULL;
-	}
+public:
+  // Template constructor
+  ListT() {
+    first = NULL;
+    last = NULL;
+    current = NULL;
+    nextl = NULL;
+    count = 0;
+    referencedItems = false;
 
-	// Template destructor
-	~ListT()
-	{
-		if(!referencedItems)	
-			DeleteAll();
-	}
+    next = NULL;
+    prev = NULL;
+  }
 
-	// Delete the current item 
-	void DeleteCurrent(bool destroyObject = true)
-	{
-		if(!current)
-			return;
+  // Template destructor
+  ~ListT() {
+    if (!referencedItems)
+      DeleteAll();
+  }
 
-		Delete(current, destroyObject);
+  // Delete the current item
+  void DeleteCurrent(bool destroyObject = true) {
+    if (!current)
+      return;
 
-		current = NULL;
-	}
+    Delete(current, destroyObject);
 
-	// Delete the item (must be in list) 
-	void Delete(T *del, bool destroyObject = true)
-	{
-		if(!del)
-			return;
+    current = NULL;
+  }
 
-		// set the link with the previous item
-		if(del->prev)
-			del->prev->next = del->next;
-		else
-			// the deleted is the first item, so set the first to the next item
-			first = del->next;
+  // Delete the item (must be in list)
+  void Delete(T *del, bool destroyObject = true) {
+    if (!del)
+      return;
 
-		// set the previous link in the next item
-		if(del->next)
-			del->next->prev = del->prev;
+    // set the link with the previous item
+    if (del->prev)
+      del->prev->next = del->next;
+    else
+      // the deleted is the first item, so set the first to the next item
+      first = del->next;
 
-		// check if the item is the last item
-		if(del == last)
-		{
-			if(del->prev)
-				last = del->prev;
-			else
-				last = NULL;
-		}
+    // set the previous link in the next item
+    if (del->next)
+      del->next->prev = del->prev;
 
-		if(destroyObject)
-			delete del;
+    // check if the item is the last item
+    if (del == last) {
+      if (del->prev)
+        last = del->prev;
+      else
+        last = NULL;
+    }
 
-		if(count)
-			count--;
-	}
+    if (destroyObject)
+      delete del;
 
-	// Delete all elements from the list
-	void DeleteAll()
-	{
-		T *current = first;
-		T *next = NULL;
+    if (count)
+      count--;
+  }
 
-		// remove list elements
-		while(current)
-		{
-			next = current->next;
-			delete current;
-			current = next;
-		}
+  // Delete all elements from the list
+  void DeleteAll() {
+    T *current = first;
+    T *next = NULL;
 
-		first = NULL;
-		last = NULL;
-		current = NULL;
-		count = 0;
-	}
+    // remove list elements
+    while (current) {
+      next = current->next;
+      delete current;
+      current = next;
+    }
 
-	// Sets whether items are just referenced by the list, and must not be deleted 
-	void SetReferencedItems(bool value)
-	{
-		referencedItems = value;
-	}
+    first = NULL;
+    last = NULL;
+    current = NULL;
+    count = 0;
+  }
 
-	// Add a new item to the list
-	void Add(T* value)
-	{
-		// check if it is the first item in the list
-		if(!first)
-		{
-			first = value;
-			value->prev = NULL;
-		}
-		else
-			// otherwise link the previous element with the new and vice versa
-		{
-			last->next = value;
-			value->prev = last;
-		}
+  // Sets whether items are just referenced by the list, and must not be deleted
+  void SetReferencedItems(bool value) { referencedItems = value; }
 
-		last = value;
-		value->next = NULL;
+  // Add a new item to the list
+  void Add(T *value) {
+    // check if it is the first item in the list
+    if (!first) {
+      first = value;
+      value->prev = NULL;
+    } else
+    // otherwise link the previous element with the new and vice versa
+    {
+      last->next = value;
+      value->prev = last;
+    }
 
-		// make the newly added value as current so DeleteCurrent can be applied after Add but without GetFirst/Next
-		current = value;
+    last = value;
+    value->next = NULL;
 
-		// increase the number of items in the list
-		count++;
-	}
+    // make the newly added value as current so DeleteCurrent can be applied
+    // after Add but without GetFirst/Next
+    current = value;
 
-	// Append a new item to the list after the specified item
-	void Append(T* existing, T* value)
-	{
-		if(!existing || !value)
-			return;
+    // increase the number of items in the list
+    count++;
+  }
 
-		T* prevNext = existing->next;
+  // Append a new item to the list after the specified item
+  void Append(T *existing, T *value) {
+    if (!existing || !value)
+      return;
 
-		// set links
-		existing->next = value;
-		value->prev = existing; 
-		value->next = prevNext;
+    T *prevNext = existing->next;
 
-		if(prevNext)
-			prevNext->prev = value;
+    // set links
+    existing->next = value;
+    value->prev = existing;
+    value->next = prevNext;
 
-		// check if we insert after current last item
-		if(existing == last)
-			last = value;
+    if (prevNext)
+      prevNext->prev = value;
 
-		// increase the number of items in the list
-		count++;
-	}
+    // check if we insert after current last item
+    if (existing == last)
+      last = value;
 
-	// Prepend a new item in the list before the specified item
-	void Prepend(T* existing, T* value)
-	{
-		if(!existing || !value)
-			return;
+    // increase the number of items in the list
+    count++;
+  }
 
-		T* prevExisting = existing->prev;
+  // Prepend a new item in the list before the specified item
+  void Prepend(T *existing, T *value) {
+    if (!existing || !value)
+      return;
 
-		// if previous does not exist, we are adding new first
-		if(!prevExisting)
-			first = value;  
-		else
-			prevExisting->next = value;
+    T *prevExisting = existing->prev;
 
-		// set links for existing and prepended items
-		value->next = existing;
-		value->prev = existing->prev;
-		existing->prev = value;
+    // if previous does not exist, we are adding new first
+    if (!prevExisting)
+      first = value;
+    else
+      prevExisting->next = value;
 
-		// increase the number of items in the list
-		count++;
-	}
+    // set links for existing and prepended items
+    value->next = existing;
+    value->prev = existing->prev;
+    existing->prev = value;
 
-	// Get the first value
-	T* GetFirst()
-	{
-		if(!first)
-			return NULL;
+    // increase the number of items in the list
+    count++;
+  }
 
-		current = first;
-		nextl = first->next;
+  // Get the first value
+  T *GetFirst() {
+    if (!first)
+      return NULL;
 
-		return first;
-	}
+    current = first;
+    nextl = first->next;
 
-	// Get the first value without using current field (this is required for nested/concurrent iteration)
-	T* GetFirstNoCurrent()
-	{
-		return first;
-	}
+    return first;
+  }
 
-	// Get the last value without using current field (this is required for nested/concurrent iterations)
-	T* GetLastNoCurrent()
-	{
-		return last;
-	}
+  // Get the first value without using current field (this is required for
+  // nested/concurrent iteration)
+  T *GetFirstNoCurrent() { return first; }
 
-	// Get the next value
-	T* GetNext()
-	{
-		current = nextl;
+  // Get the last value without using current field (this is required for
+  // nested/concurrent iterations)
+  T *GetLastNoCurrent() { return last; }
 
-		// next is set in advance because current can be deleted after retrieval
-		if(nextl)
-			nextl = current->next;
+  // Get the next value
+  T *GetNext() {
+    current = nextl;
 
-		return current;
-	}
+    // next is set in advance because current can be deleted after retrieval
+    if (nextl)
+      nextl = current->next;
 
-	// Get the total number of items in the list
-	int GetCount() { return count; }
+    return current;
+  }
+
+  // Get the total number of items in the list
+  int GetCount() { return count; }
 };
 
 #endif // sqlines_listt_h

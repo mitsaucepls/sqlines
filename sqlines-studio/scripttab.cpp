@@ -14,135 +14,126 @@
  * limitations under the License.
  */
 
+#include "QFile"
 #include "QMessageBox"
 #include "QPlainTextEdit"
-#include "QFile"
 #include "QTextStream"
 
 #include "scripttab.h"
 #include "ui_scripttab.h"
 
-ScriptTab::ScriptTab(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::ScriptTab)
-{
-    _sourceTextEdit = NULL;
-    _targetTextEdit = NULL;
+ScriptTab::ScriptTab(QWidget *parent) : QWidget(parent), ui(new Ui::ScriptTab) {
+  _sourceTextEdit = NULL;
+  _targetTextEdit = NULL;
 
-    _sourceHighlighter = NULL;
-    _targetHighlighter = NULL;
+  _sourceHighlighter = NULL;
+  _targetHighlighter = NULL;
 
-    ui->setupUi(this);
+  ui->setupUi(this);
 
-    createScriptTab();
+  createScriptTab();
 }
 
-ScriptTab::~ScriptTab()
-{
-    delete ui;
+ScriptTab::~ScriptTab() {
+  delete ui;
 
-    delete _sourceHighlighter;
-    delete _targetHighlighter;
+  delete _sourceHighlighter;
+  delete _targetHighlighter;
 }
 
 // Create or save if required and return the name of the source file
-QString ScriptTab::GetSourceFile()
-{
-    QString name = _tab_name;
+QString ScriptTab::GetSourceFile() {
+  QString name = _tab_name;
 
-    // Save the source content to the file
-    SaveSource();
+  // Save the source content to the file
+  SaveSource();
 
-    return name;
+  return name;
 }
 
 // Save the source content to the file
-void ScriptTab::SaveSource()
-{
-    if(_sourceTextEdit == NULL)
-        return;
+void ScriptTab::SaveSource() {
+  if (_sourceTextEdit == NULL)
+    return;
 
-    QFile file;
+  QFile file;
 
-    file.setFileName(_tab_name);
-    file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+  file.setFileName(_tab_name);
+  file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
 
-    QTextStream stream(&file);
-    stream << _sourceTextEdit->toPlainText() << endl;
+  QTextStream stream(&file);
+  stream << _sourceTextEdit->toPlainText() << endl;
 
-    file.close();
+  file.close();
 }
 
 // Set the source file and load its content to the source page
-void ScriptTab::SetSourceFile(QString &source_file)
-{
-    ReadFileToTextEdit(_sourceTextEdit, source_file);
+void ScriptTab::SetSourceFile(QString &source_file) {
+  ReadFileToTextEdit(_sourceTextEdit, source_file);
 }
 
 // Set the target file and load its content to the target page
-void ScriptTab::SetTargetFile(QString &target_file)
-{
-    ReadFileToTextEdit(_targetTextEdit, target_file);
+void ScriptTab::SetTargetFile(QString &target_file) {
+  ReadFileToTextEdit(_targetTextEdit, target_file);
 }
 
 // Read file content to the specified text edit
-void ScriptTab::ReadFileToTextEdit(QPlainTextEdit *edit, QString &in_file)
-{
-    if(edit == NULL)
-        return;
+void ScriptTab::ReadFileToTextEdit(QPlainTextEdit *edit, QString &in_file) {
+  if (edit == NULL)
+    return;
 
-    QFile file;
+  QFile file;
 
-    file.setFileName(in_file);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+  file.setFileName(in_file);
+  file.open(QIODevice::ReadOnly | QIODevice::Text);
 
-    QTextStream stream(&file);
-    edit->setPlainText(stream.readAll());
-    edit->setFont(QFont("Courier"));
+  QTextStream stream(&file);
+  edit->setPlainText(stream.readAll());
+  edit->setFont(QFont("Courier"));
 
-    file.close();
+  file.close();
 }
 
-void ScriptTab::resizeEvent(QResizeEvent *event)
-{
-    ui->verticalLayoutWidget->resize(parentWidget()->size());
-    mainVerticalSplitter->resize(ui->verticalLayoutWidget->size());
-    QWidget::resizeEvent(event);
+void ScriptTab::resizeEvent(QResizeEvent *event) {
+  ui->verticalLayoutWidget->resize(parentWidget()->size());
+  mainVerticalSplitter->resize(ui->verticalLayoutWidget->size());
+  QWidget::resizeEvent(event);
 }
 
-void ScriptTab::createScriptTab()
-{
-    // create splitter between script views and logs
-    mainVerticalSplitter = new QSplitter(Qt::Vertical, ui->verticalLayoutWidget);
+void ScriptTab::createScriptTab() {
+  // create splitter between script views and logs
+  mainVerticalSplitter = new QSplitter(Qt::Vertical, ui->verticalLayoutWidget);
 
-    // create source/target views
-    QSplitter *mainHorizintalSplitter = new QSplitter();
-    _sourceTextEdit = new QPlainTextEdit();
-    _targetTextEdit = new QPlainTextEdit();
+  // create source/target views
+  QSplitter *mainHorizintalSplitter = new QSplitter();
+  _sourceTextEdit = new QPlainTextEdit();
+  _targetTextEdit = new QPlainTextEdit();
 
-    mainHorizintalSplitter->addWidget(_sourceTextEdit);
-    mainHorizintalSplitter->addWidget(_targetTextEdit);
+  mainHorizintalSplitter->addWidget(_sourceTextEdit);
+  mainHorizintalSplitter->addWidget(_targetTextEdit);
 
-    _sourceHighlighter = new Highlighter(_sourceTextEdit->document());
-    _targetHighlighter = new Highlighter(_targetTextEdit->document());
+  _sourceHighlighter = new Highlighter(_sourceTextEdit->document());
+  _targetHighlighter = new Highlighter(_targetTextEdit->document());
 
-    // create bottom quick template and log views
-    //QSplitter *bottomHorizintalSplitter = new QSplitter();
-    //QTabWidget *templateTabWidget = new QTabWidget();
-    //QTabWidget *logTabWidget = new QTabWidget();
-    //QPlainTextEdit *templateTextEdit = new QPlainTextEdit();
-    //QPlainTextEdit *logTextEdit = new QPlainTextEdit();
+  // create bottom quick template and log views
+  // QSplitter *bottomHorizintalSplitter = new QSplitter();
+  // QTabWidget *templateTabWidget = new QTabWidget();
+  // QTabWidget *logTabWidget = new QTabWidget();
+  // QPlainTextEdit *templateTextEdit = new QPlainTextEdit();
+  // QPlainTextEdit *logTextEdit = new QPlainTextEdit();
 
-    //templateTabWidget->addTab(templateTextEdit, "Quick Conversion Template");
-    //logTabWidget->addTab(logTextEdit, "Log");
+  // templateTabWidget->addTab(templateTextEdit, "Quick Conversion Template");
+  // logTabWidget->addTab(logTextEdit, "Log");
 
-    //bottomHorizintalSplitter->addWidget(templateTabWidget);
-    //bottomHorizintalSplitter->addWidget(logTabWidget);
+  // bottomHorizintalSplitter->addWidget(templateTabWidget);
+  // bottomHorizintalSplitter->addWidget(logTabWidget);
 
-    mainVerticalSplitter->addWidget(mainHorizintalSplitter);
-    //mainVerticalSplitter->addWidget(bottomHorizintalSplitter);
+  mainVerticalSplitter->addWidget(mainHorizintalSplitter);
+  // mainVerticalSplitter->addWidget(bottomHorizintalSplitter);
 
-    // set default view proporation
-    QList<int> sizes; sizes.append(300); sizes.append(100);
-    mainVerticalSplitter->setSizes(sizes);
+  // set default view proporation
+  QList<int> sizes;
+  sizes.append(300);
+  sizes.append(100);
+  mainVerticalSplitter->setSizes(sizes);
 }

@@ -4,18 +4,17 @@
 #include <QTableWidget>
 
 namespace Ui {
-    class TableWidget;
+class TableWidget;
 }
 
-class TableWidget : public QTableWidget
-{
-    Q_OBJECT
+class TableWidget : public QTableWidget {
+  Q_OBJECT
 
 public:
-    explicit TableWidget(QWidget *parent = 0);
-    ~TableWidget();
+  explicit TableWidget(QWidget *parent = 0);
+  ~TableWidget();
 
-    void keyPressEvent(QKeyEvent * event);
+  void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // TABLEWIDGET_H

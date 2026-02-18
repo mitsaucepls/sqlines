@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,31 +21,32 @@
 #include <string>
 
 // Default log file name
-#define APPLOG_DEFAULT_FILE			"applog.log"
+#define APPLOG_DEFAULT_FILE "applog.log"
 
-class AppLog
-{
-	// Log file name
-	std::string _filename;
-	// Trace mode 
-	bool _trace;
+class AppLog {
+  // Log file name
+  std::string _filename;
+  // Trace mode
+  bool _trace;
+
 public:
-	AppLog();
+  AppLog();
 
-	// Log message to console and log file
-    void Log(const char *format, ...);
-    // Log messages to file if trace mode is set
-    void Trace(const char *format, ...);
-    // Write to console only
-    void LogConsole(const char *format, ...);
-    // Write to log file only
-    void LogFile(const char *format, ...);
+  // Log message to console and log file
+  void Log(const char *format, ...);
+  // Log messages to file if trace mode is set
+  void Trace(const char *format, ...);
+  // Write to console only
+  void LogConsole(const char *format, ...);
+  // Write to log file only
+  void LogFile(const char *format, ...);
 
-	// Set log file name
-	void SetLogfile(const char *name) { _filename = name; }
+  // Set log file name
+  void SetLogfile(const char *name) { _filename = name; }
+
 private:
-    // Write to log file
-    void LogFileVaList(const char *format, va_list args);	
+  // Write to log file
+  void LogFileVaList(const char *format, va_list args);
 };
 
 #endif // sqlines_applog_h

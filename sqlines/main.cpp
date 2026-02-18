@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,28 +16,23 @@
 
 // SQLines entry point
 
-#include <stdio.h>
 #include "sqlines.h"
+#include <stdio.h>
 
 // Entry point
-int main(int argc, char** argv)
-{
-	int rc = 0;
+int main(int argc, char **argv) {
+  int rc = 0;
 
-	Sqlines sqlines;
+  Sqlines sqlines;
 
-	try
-	{
-		// Run SQLines in command line
-		rc = sqlines.Run(argc, argv);		
-	}
-	catch(...)
-	{
-		return -2;
-	}
+  try {
+    // Run SQLines in command line
+    rc = sqlines.Run(argc, argv);
+  } catch (...) {
+    return -2;
+  }
 
-	printf("\n");
+  printf("\n");
 
-	return rc;
+  return rc;
 }
-

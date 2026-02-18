@@ -17,53 +17,52 @@
 #ifndef SCRIPTTAB_H
 #define SCRIPTTAB_H
 
-#include <QWidget>
-#include <QSplitter>
-#include <QPlainTextEdit>
 #include "highlighter.h"
+#include <QPlainTextEdit>
+#include <QSplitter>
+#include <QWidget>
 
 namespace Ui {
-    class ScriptTab;
+class ScriptTab;
 }
 
-class ScriptTab : public QWidget
-{
-    Q_OBJECT
+class ScriptTab : public QWidget {
+  Q_OBJECT
 
 public:
-    explicit ScriptTab(QWidget *parent = 0);
-    ~ScriptTab();
+  explicit ScriptTab(QWidget *parent = 0);
+  ~ScriptTab();
 
-    // Create or save if required and return the name of the source file
-    QString GetSourceFile();
-    // Save the source content to the file
-    void SaveSource();
+  // Create or save if required and return the name of the source file
+  QString GetSourceFile();
+  // Save the source content to the file
+  void SaveSource();
 
-    // Set the source file and load its content to the source page
-    void SetSourceFile(QString &file);
-    // Set the target file and load its content to the target page
-    void SetTargetFile(QString &file);
+  // Set the source file and load its content to the source page
+  void SetSourceFile(QString &file);
+  // Set the target file and load its content to the target page
+  void SetTargetFile(QString &file);
 
-    void SetTabName(QString &name) { _tab_name = name; }
+  void SetTabName(QString &name) { _tab_name = name; }
 
 protected:
-    void resizeEvent(QResizeEvent *event);
+  void resizeEvent(QResizeEvent *event);
 
 private:
-    Ui::ScriptTab *ui;
+  Ui::ScriptTab *ui;
 
-    QString _tab_name;
-    QSplitter *mainVerticalSplitter;
+  QString _tab_name;
+  QSplitter *mainVerticalSplitter;
 
-    QPlainTextEdit *_sourceTextEdit;
-    QPlainTextEdit *_targetTextEdit;
+  QPlainTextEdit *_sourceTextEdit;
+  QPlainTextEdit *_targetTextEdit;
 
-    Highlighter *_sourceHighlighter;
-    Highlighter *_targetHighlighter;
+  Highlighter *_sourceHighlighter;
+  Highlighter *_targetHighlighter;
 
-    void createScriptTab();
+  void createScriptTab();
 
-    void ReadFileToTextEdit(QPlainTextEdit *edit, QString &file);
+  void ReadFileToTextEdit(QPlainTextEdit *edit, QString &file);
 };
 
 #endif // SCRIPTTAB_H

@@ -24,34 +24,32 @@
 
 class QTextDocument;
 
-class Highlighter : public QSyntaxHighlighter
-{
-    Q_OBJECT
+class Highlighter : public QSyntaxHighlighter {
+  Q_OBJECT
 
- public:
-     Highlighter(QTextDocument *parent = 0);
+public:
+  Highlighter(QTextDocument *parent = 0);
 
- protected:
-     void highlightBlock(const QString &text);
+protected:
+  void highlightBlock(const QString &text);
 
- private:
-     struct HighlightingRule
-     {
-         QRegExp pattern;
-         QTextCharFormat format;
-     };
-     QVector<HighlightingRule> highlightingRules;
+private:
+  struct HighlightingRule {
+    QRegExp pattern;
+    QTextCharFormat format;
+  };
+  QVector<HighlightingRule> highlightingRules;
 
-     QRegExp commentStartExpression;
-     QRegExp commentEndExpression;
+  QRegExp commentStartExpression;
+  QRegExp commentEndExpression;
 
-     QTextCharFormat keywordFormat;
-     QTextCharFormat numberFormat;
-     QTextCharFormat singleLineCommentFormat;
-     QTextCharFormat singleLineCommentFormat2;
-     QTextCharFormat multiLineCommentFormat;
-     QTextCharFormat quotationFormat;
-     QTextCharFormat singleQuotationFormat;
+  QTextCharFormat keywordFormat;
+  QTextCharFormat numberFormat;
+  QTextCharFormat singleLineCommentFormat;
+  QTextCharFormat singleLineCommentFormat2;
+  QTextCharFormat multiLineCommentFormat;
+  QTextCharFormat quotationFormat;
+  QTextCharFormat singleQuotationFormat;
 };
 
 #endif // HIGHLIGHTER_H

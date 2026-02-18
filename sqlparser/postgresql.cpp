@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,152 +16,136 @@
 
 // PostgreSQL specific functions
 
+#include "sqlparser.h"
 #include <stdio.h>
 #include <string.h>
-#include "sqlparser.h"
 
 // Transform format string with parameters to concatenation expression
-void SqlParser::PostgresFormatToConcat(Token *format, ListW &params)
-{
-	if(format == NULL && format->len > 0)
-		return;
+void SqlParser::PostgresFormatToConcat(Token *format, ListW &params) {
+  if (format == NULL && format->len > 0)
+    return;
 
-	ListwItem *list = params.GetFirst();
+  ListwItem *list = params.GetFirst();
 
-	TokenStr str("'", L"'", 1);
+  TokenStr str("'", L"'", 1);
 
-	size_t num = 0;
+  size_t num = 0;
 
-	for(size_t i = 1; i < format->len - 1; i++)
-	{
-		// Next placeholder % matched
-		if(format->Compare('%', L'%', i) == true)
-		{
-			// Prepend the string before placeholder
-			if(str.len > 1)
-			{
-				str.Append("' || ", L"' || ", 5); 
+  for (size_t i = 1; i < format->len - 1; i++) {
+    // Next placeholder % matched
+    if (format->Compare('%', L'%', i) == true) {
+      // Prepend the string before placeholder
+      if (str.len > 1) {
+        str.Append("' || ", L"' || ", 5);
 
-				if(list != NULL)
-					PrependNoFormat((Token*)list->value, str.str.c_str(), str.wstr.c_str(), str.len);  
-			}
+        if (list != NULL)
+          PrependNoFormat((Token *)list->value, str.str.c_str(),
+                          str.wstr.c_str(), str.len);
+      }
 
-			str.Set(" || '", L" || '", 5);
-			num++;
+      str.Set(" || '", L" || '", 5);
+      num++;
 
-			// List can be already empty but trail values still exist
-			if(list != NULL)
-				list = list->next;
-			
-			continue;
-		}
+      // List can be already empty but trail values still exist
+      if (list != NULL)
+        list = list->next;
 
-		str.Append(format, i, 1);
-	}
+      continue;
+    }
 
-	// For not PostgreSQL, remove format if a % placeholder exists
-	if(num > 0 && Target(SQL_POSTGRESQL) == false)
-	{
-		// Append the trail string
-		if(str.len > 5)
-		{
-			ListwItem *last = params.GetLast();
+    str.Append(format, i, 1);
+  }
 
-			str.Append("'", L"'", 1);
+  // For not PostgreSQL, remove format if a % placeholder exists
+  if (num > 0 && Target(SQL_POSTGRESQL) == false) {
+    // Append the trail string
+    if (str.len > 5) {
+      ListwItem *last = params.GetLast();
 
-			if(last != NULL)
-				AppendNoFormat((Token*)last->value, str.str.c_str(), str.wstr.c_str(), str.len);  
-		}
+      str.Append("'", L"'", 1);
 
-		Token::Remove(format);
-	}
+      if (last != NULL)
+        AppendNoFormat((Token *)last->value, str.str.c_str(), str.wstr.c_str(),
+                       str.len);
+    }
+
+    Token::Remove(format);
+  }
 }
 
 // In PostgreSQL body terminates with $$ LANGUAGE plpgsql;
-bool SqlParser::ParsePostgresBodyEnd()
-{
-	Token *dol = GetNextCharToken('$', L'$');
+bool SqlParser::ParsePostgresBodyEnd() {
+  Token *dol = GetNextCharToken('$', L'$');
 
-	if(dol == NULL)
-		return false;
+  if (dol == NULL)
+    return false;
 
-	Token *dol2 = GetNextCharToken('$', L'$');
-	Token *name = NULL;
+  Token *dol2 = GetNextCharToken('$', L'$');
+  Token *name = NULL;
 
-	// $body$
-	if(dol2 == NULL)
-	{
-		name = GetNextToken();
-		dol2 = GetNextCharToken('$', L'$');
-	}
+  // $body$
+  if (dol2 == NULL) {
+    name = GetNextToken();
+    dol2 = GetNextCharToken('$', L'$');
+  }
 
-	if(dol2 == NULL)
-		return false;
+  if (dol2 == NULL)
+    return false;
 
-	Token *language = NULL;
-	Token *plpgsql = NULL;
-	Token *semi = NULL;
+  Token *language = NULL;
+  Token *plpgsql = NULL;
+  Token *semi = NULL;
 
-	if(dol2 != NULL)
-		language = GetNextWordToken("LANGUAGE", L"LANGUAGE", 8);
+  if (dol2 != NULL)
+    language = GetNextWordToken("LANGUAGE", L"LANGUAGE", 8);
 
-	if(language != NULL)
-		plpgsql = GetNextWordToken("PLPGSQL", L"PLPGSQL", 7);
+  if (language != NULL)
+    plpgsql = GetNextWordToken("PLPGSQL", L"PLPGSQL", 7);
 
-	if(plpgsql != NULL)
-	{
-		// Options
-		while(true)
-		{
-			Token *option = GetNextToken();
+  if (plpgsql != NULL) {
+    // Options
+    while (true) {
+      Token *option = GetNextToken();
 
-			if(option == NULL)
-				break;
+      if (option == NULL)
+        break;
 
-			bool exists = false;
+      bool exists = false;
 
-			// VOLATILE
-			if(option->Compare("VOLATILE", L"VOLATILE", 8) == true)
-			{
-				if(_target != SQL_POSTGRESQL)
-					Token::Remove(option);
+      // VOLATILE
+      if (option->Compare("VOLATILE", L"VOLATILE", 8) == true) {
+        if (_target != SQL_POSTGRESQL)
+          Token::Remove(option);
 
-				exists = true;
-				continue;
-			}
-			else
-			// COST n
-			if(option->Compare("COST", L"COST", 4) == true)
-			{
-				Token *num = GetNextToken();
+        exists = true;
+        continue;
+      } else
+        // COST n
+        if (option->Compare("COST", L"COST", 4) == true) {
+          Token *num = GetNextToken();
 
-				if(_target != SQL_POSTGRESQL)
-					Token::Remove(option, num);
+          if (_target != SQL_POSTGRESQL)
+            Token::Remove(option, num);
 
-				exists = true;
-				continue;
-			}
+          exists = true;
+          continue;
+        }
 
-			PushBack(option);
-			break;
-		}
+      PushBack(option);
+      break;
+    }
 
-		semi = GetNextCharToken(';', L';');
-	}
+    semi = GetNextCharToken(';', L';');
+  }
 
-	// Change to / for Oracle
-	if(_target == SQL_ORACLE)
-	{
-		Token::ChangeNoFormat(dol, "/", L"/", 1);
-		
-		Token::Remove(name);
-		Token::Remove(dol2, plpgsql);
-		Token::Remove(semi);
-	}
+  // Change to / for Oracle
+  if (_target == SQL_ORACLE) {
+    Token::ChangeNoFormat(dol, "/", L"/", 1);
 
-	return true;
+    Token::Remove(name);
+    Token::Remove(dol2, plpgsql);
+    Token::Remove(semi);
+  }
+
+  return true;
 }
-
-
-
-

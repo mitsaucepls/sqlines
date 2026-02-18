@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+#include <QComboBox>
 #include <QFileDialog>
 #include <QGridLayout>
-#include <QComboBox>
 #include <QLabel>
 #include <QPushButton>
 
@@ -24,106 +24,99 @@
 
 using namespace ui;
 
-ConvertUtilityWidget::ConvertUtilityWidget(const QStringList& sourceModes,
-                                           const QStringList& targetModes,
-                                           QWidget* parent) noexcept
- :  QWidget(parent)
-{
-    setObjectName("ConvertUtility");
+ConvertUtilityWidget::ConvertUtilityWidget(const QStringList &sourceModes,
+                                           const QStringList &targetModes,
+                                           QWidget *parent) noexcept
+    : QWidget(parent) {
+  setObjectName("ConvertUtility");
 
-    this->sourceComboBox.addItems(sourceModes);
-    this->targetComboBox.addItems(targetModes);
+  this->sourceComboBox.addItems(sourceModes);
+  this->targetComboBox.addItems(targetModes);
 
-    this->filePathLabel.setWordWrap(true);
-    this->filePathLabel.setDisabled(true);
+  this->filePathLabel.setWordWrap(true);
+  this->filePathLabel.setDisabled(true);
 
-    this->logLabel.setReadOnly(true);
-    this->logLabel.setDisabled(true);
-    this->logLabel.setObjectName("LogLabel");
+  this->logLabel.setReadOnly(true);
+  this->logLabel.setDisabled(true);
+  this->logLabel.setObjectName("LogLabel");
 
-    auto makeActive = [this] {
-        if (this->logLabel.toPlainText() == "Log") {
-            this->logLabel.setDisabled(true);
-        } else {
-            this->logLabel.setDisabled(false);
-        }
+  auto makeActive = [this] {
+    if (this->logLabel.toPlainText() == "Log") {
+      this->logLabel.setDisabled(true);
+    } else {
+      this->logLabel.setDisabled(false);
+    }
 
-        if (this->filePathLabel.text() == "Source:") {
-            this->filePathLabel.setDisabled(true);
-        } else {
-            this->filePathLabel.setDisabled(false);
-        }
-    };
+    if (this->filePathLabel.text() == "Source:") {
+      this->filePathLabel.setDisabled(true);
+    } else {
+      this->filePathLabel.setDisabled(false);
+    }
+  };
 
-    connect(&this->logLabel, &QPlainTextEdit::textChanged,
-            this, makeActive);
+  connect(&this->logLabel, &QPlainTextEdit::textChanged, this, makeActive);
 
-    paint();
+  paint();
 }
 
-void ConvertUtilityWidget::showFilePath(const QString& path) noexcept
-{
-    this->filePathLabel.setText("Source:" + path);
+void ConvertUtilityWidget::showFilePath(const QString &path) noexcept {
+  this->filePathLabel.setText("Source:" + path);
 }
 
-void ConvertUtilityWidget::showLog(const QString& log) noexcept
-{
-    this->logLabel.setPlainText(log);
+void ConvertUtilityWidget::showLog(const QString &log) noexcept {
+  this->logLabel.setPlainText(log);
 }
 
-QString ConvertUtilityWidget::currentSourceMode() const noexcept
-{
-    return this->sourceComboBox.currentText();;
+QString ConvertUtilityWidget::currentSourceMode() const noexcept {
+  return this->sourceComboBox.currentText();
+  ;
 }
 
-QString ConvertUtilityWidget::currentTargetMode() const noexcept
-{
-    return this->targetComboBox.currentText();;
+QString ConvertUtilityWidget::currentTargetMode() const noexcept {
+  return this->targetComboBox.currentText();
+  ;
 }
 
-QString ConvertUtilityWidget::choseFileToOpen(const QString& currDir) noexcept
-{
-    return QFileDialog::getOpenFileName(this, "", currDir);
+QString ConvertUtilityWidget::choseFileToOpen(const QString &currDir) noexcept {
+  return QFileDialog::getOpenFileName(this, "", currDir);
 }
 
-void ConvertUtilityWidget::closeEvent(QCloseEvent*)
-{
-    this->filePathLabel.setText("Source:");
-    this->logLabel.setPlainText("Log");
+void ConvertUtilityWidget::closeEvent(QCloseEvent *) {
+  this->filePathLabel.setText("Source:");
+  this->logLabel.setPlainText("Log");
 }
 
-void ConvertUtilityWidget::paint() noexcept
-{
-    setWindowTitle("Conversion utility");
-    setFixedSize(350, 500);
+void ConvertUtilityWidget::paint() noexcept {
+  setWindowTitle("Conversion utility");
+  setFixedSize(350, 500);
 
-    auto layout = new QGridLayout(this);
+  auto layout = new QGridLayout(this);
 
-    auto sourceComboBoxName = new QLabel("Source: ");
-    connect(&this->sourceComboBox, &QComboBox::currentTextChanged,
-            this, &ConvertUtilityWidget::sourceModeSelected);
+  auto sourceComboBoxName = new QLabel("Source: ");
+  connect(&this->sourceComboBox, &QComboBox::currentTextChanged, this,
+          &ConvertUtilityWidget::sourceModeSelected);
 
-    auto targetComboBoxName = new QLabel("Target: ");
-    connect(&this->targetComboBox, &QComboBox::currentTextChanged,
-            this, &ConvertUtilityWidget::targetModeSelected);
+  auto targetComboBoxName = new QLabel("Target: ");
+  connect(&this->targetComboBox, &QComboBox::currentTextChanged, this,
+          &ConvertUtilityWidget::targetModeSelected);
 
-    this->filePathLabel.setText("Source:");
-    this->logLabel.setPlainText("Log");
+  this->filePathLabel.setText("Source:");
+  this->logLabel.setPlainText("Log");
 
-    auto selectFileButton = new QPushButton("Select source file");
-    connect(selectFileButton, &QPushButton::clicked,
-            this, &ConvertUtilityWidget::selectFilePressed);
+  auto selectFileButton = new QPushButton("Select source file");
+  connect(selectFileButton, &QPushButton::clicked, this,
+          &ConvertUtilityWidget::selectFilePressed);
 
-    auto convertButton = new QPushButton("Convert");
-    connect(convertButton, &QPushButton::clicked,
-            this, &ConvertUtilityWidget::convertPressed);
+  auto convertButton = new QPushButton("Convert");
+  connect(convertButton, &QPushButton::clicked, this,
+          &ConvertUtilityWidget::convertPressed);
 
-    layout->addWidget(sourceComboBoxName, 0, 0);
-    layout->addWidget(&this->sourceComboBox, 0, 1);
-    layout->addWidget(targetComboBoxName, 1, 0);
-    layout->addWidget(&this->targetComboBox, 1, 1);
-    layout->addWidget(&this->logLabel, 2, 0, 1, 0);
-    layout->addWidget(&this->filePathLabel, 3, 0, 1, 0);
-    layout->addWidget(selectFileButton, 4, 0, 1, 0);
-    layout->addWidget(convertButton, 5, 0, 1, 0);
+  layout->addWidget(sourceComboBoxName, 0, 0);
+  layout->addWidget(&this->sourceComboBox, 0, 1);
+  layout->addWidget(targetComboBoxName, 1, 0);
+  layout->addWidget(&this->targetComboBox, 1, 1);
+  layout->addWidget(&this->logLabel, 2, 0, 1, 0);
+  layout->addWidget(&this->filePathLabel, 3, 0, 1, 0);
+  layout->addWidget(selectFileButton, 4, 0, 1, 0);
+  layout->addWidget(convertButton, 5, 0, 1, 0);
 }

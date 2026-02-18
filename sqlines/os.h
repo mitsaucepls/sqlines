@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,17 +19,16 @@
 #ifndef sqlines_os_h
 #define sqlines_os_h
 
-class Os
-{
+class Os {
 public:
-	// Get procedure address
-	static void* GetProcAddress(int module, const char *name);
+  // Get procedure address
+  static void *GetProcAddress(int module, const char *name);
 
-	// Get current time in milliseconds
-	static int GetTickCount();
+  // Get current time in milliseconds
+  static int GetTickCount();
 
-	// Get error message of the last system error
-	static void GetLastErrorText(const char *prefix, char *output, int len);
+  // Get error message of the last system error
+  static void GetLastErrorText(const char *prefix, char *output, int len);
 };
 
 #endif // sqlines_os_h

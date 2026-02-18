@@ -14,62 +14,56 @@
  * limitations under the License.
  */
 
-#include <utility>
 #include "QApplication"
-#include <QStandardPaths>
 #include <QDir>
+#include <QStandardPaths>
+#include <utility>
 
 #include "settings.hpp"
 
 using namespace model;
 
-Settings::Settings() noexcept
-{
-    setDefaultSettings();
+Settings::Settings() noexcept { setDefaultSettings(); }
+
+QString Settings::operator[](const QString &key) const noexcept {
+  const auto &item = this->settings.find(key);
+  if (item != this->settings.end()) {
+    return (*item).second;
+  } else {
+    return {};
+  }
 }
 
-QString Settings::operator[](const QString& key) const noexcept
-{
-    const auto& item = this->settings.find(key);
-    if (item != this->settings.end()) {
-        return (*item).second;
-    } else {
-        return {};
-    }
+QString &Settings::operator[](const QString &key) noexcept {
+  return this->settings[key];
 }
 
-QString& Settings::operator[](const QString& key) noexcept
-{
-    return this->settings[key];
-}
+void Settings::erase(const QString &key) noexcept { this->settings.erase(key); }
 
-void Settings::erase(const QString& key) noexcept
-{
-    this->settings.erase(key);
-}
+void Settings::setDefaultSettings() noexcept {
+  this->settings["general.save-last-session"] = QString::number(true);
 
-void Settings::setDefaultSettings() noexcept
-{
-    this->settings["general.save-last-session"] = QString::number(true);
+  QString workingDir =
+      QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  this->settings["general.dirs.curr-dir"] = std::move(workingDir);
 
-    QString workingDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    this->settings["general.dirs.curr-dir"] = std::move(workingDir);
+  QString cacheDir =
+      QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+  this->settings["general.dirs.cache-dir"] = std::move(cacheDir);
 
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    this->settings["general.dirs.cache-dir"] = std::move(cacheDir);
-
-    QString processPath = QApplication::applicationDirPath();
+  QString processPath = QApplication::applicationDirPath();
 #if defined(Q_OS_WIN)
-    processPath += "\sqlines.exe";
+  processPath += "\sqlines.exe";
 #elif defined(Q_OS_UNIX)
-    processPath += "/sqlines";
+  processPath += "/sqlines";
 #endif
-    this->settings["general.dirs.process-filePath"] = std::move(processPath);
+  this->settings["general.dirs.process-filePath"] = std::move(processPath);
 
-    QString licensePath = QApplication::applicationDirPath() + "/license.txt";
-    this->settings["general.dirs.license-filePath"] = QDir::toNativeSeparators(licensePath);
+  QString licensePath = QApplication::applicationDirPath() + "/license.txt";
+  this->settings["general.dirs.license-filePath"] =
+      QDir::toNativeSeparators(licensePath);
 
-    this->settings["ui.input-field.number-area"] = QString::number(true);
-    this->settings["ui.input-field.highlighter"] = QString::number(true);
-    this->settings["ui.input-field.wrapping"] = QString::number(true);
+  this->settings["ui.input-field.number-area"] = QString::number(true);
+  this->settings["ui.input-field.highlighter"] = QString::number(true);
+  this->settings["ui.input-field.wrapping"] = QString::number(true);
 }

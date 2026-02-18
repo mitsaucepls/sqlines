@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,144 +19,118 @@
 #ifndef sqlines_listw_h
 #define sqlines_listw_h
 
-class ListwItem
-{
+class ListwItem {
 public:
-	void *value;
+  void *value;
 
-	ListwItem *prev;
-	ListwItem *next;
+  ListwItem *prev;
+  ListwItem *next;
 
-	ListwItem()
-	{
-		value = NULL;
-		prev = NULL;
-		next = NULL;
-	}
+  ListwItem() {
+    value = NULL;
+    prev = NULL;
+    next = NULL;
+  }
 };
 
-class ListW
-{
-	// The first element in the list
-	ListwItem *first;
-	// The last element in the list
-	ListwItem *last;
+class ListW {
+  // The first element in the list
+  ListwItem *first;
+  // The last element in the list
+  ListwItem *last;
 
-	// Total number of items in the list
-	int count;
+  // Total number of items in the list
+  int count;
 
 public:
-	// Constructor
-	ListW()
-	{
-		first = NULL;
-		last = NULL;
-		count = 0;
-	}
+  // Constructor
+  ListW() {
+    first = NULL;
+    last = NULL;
+    count = 0;
+  }
 
-	// Destructor
-	~ListW()
-	{
-		DeleteAll();
-	}
+  // Destructor
+  ~ListW() { DeleteAll(); }
 
-	// Delete all elements from the list
-	void DeleteAll()
-	{
-		ListwItem *current = first;
-		ListwItem *next = NULL;
+  // Delete all elements from the list
+  void DeleteAll() {
+    ListwItem *current = first;
+    ListwItem *next = NULL;
 
-		// remove list elements
-		while(current)
-		{
-			next = current->next;
-			delete current;
-			current = next;
-		}
-
-		first = NULL;
-		last = NULL;
-		count = 0;
-	}
-
-    // Delete the last item
-    void DeleteLast()
-    {
-        DeleteSince(GetLast());
+    // remove list elements
+    while (current) {
+      next = current->next;
+      delete current;
+      current = next;
     }
 
-	// Delete elements since the specified item including
-	void DeleteSince(ListwItem *since)
-	{
-		if(since == NULL)
-			return;
+    first = NULL;
+    last = NULL;
+    count = 0;
+  }
 
-		ListwItem *current = since;
-		ListwItem *next = NULL;
+  // Delete the last item
+  void DeleteLast() { DeleteSince(GetLast()); }
 
-		if(since == first)
-			first = NULL;
+  // Delete elements since the specified item including
+  void DeleteSince(ListwItem *since) {
+    if (since == NULL)
+      return;
 
-		last = since->prev;
+    ListwItem *current = since;
+    ListwItem *next = NULL;
 
-		if(last != NULL)
-			last->next = NULL;
+    if (since == first)
+      first = NULL;
 
-		// remove list elements
-		while(current)
-		{
-			next = current->next;
-			delete current;
-			current = next;
+    last = since->prev;
 
-			count--;
-		}
-	}
+    if (last != NULL)
+      last->next = NULL;
 
-	// Add a new item to the list
-	void Add(void* value)
-	{
-		ListwItem *item = new ListwItem();
+    // remove list elements
+    while (current) {
+      next = current->next;
+      delete current;
+      current = next;
 
-		item->value = value;
+      count--;
+    }
+  }
 
-		// check if it is the first item in the list
-		if(!first)
-		{
-			first = item;
-			item->prev = NULL;
-		}
-		else
-		// otherwise link the previous element with the new and vice versa
-		{
-			last->next = item;
-			item->prev = last;
-		}
+  // Add a new item to the list
+  void Add(void *value) {
+    ListwItem *item = new ListwItem();
 
-		last = item;
-		item->next = NULL;
+    item->value = value;
 
-		// increase the number of items in the list
-		count++;
-	}
+    // check if it is the first item in the list
+    if (!first) {
+      first = item;
+      item->prev = NULL;
+    } else
+    // otherwise link the previous element with the new and vice versa
+    {
+      last->next = item;
+      item->prev = last;
+    }
 
-	// Get the first value
-	ListwItem* GetFirst()
-	{
-		return first;
-	}
+    last = item;
+    item->next = NULL;
 
-	// Get the last value
-	ListwItem* GetLast()
-	{
-		return last;
-	}
+    // increase the number of items in the list
+    count++;
+  }
 
-	// Get the total number of items in the list
-	int GetCount() 
-	{ 
-		return count; 
-	}
+  // Get the first value
+  ListwItem *GetFirst() { return first; }
+
+  // Get the last value
+  ListwItem *GetLast() { return last; }
+
+  // Get the total number of items in the list
+  int GetCount() { return count; }
 };
 
 #endif // sqlines_listw_h

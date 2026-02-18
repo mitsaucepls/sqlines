@@ -14,279 +14,260 @@
  * limitations under the License.
  */
 
-#include <QSignalBlocker>
 #include <QFileDialog>
 #include <QGridLayout>
-#include <QVBoxLayout>
-#include <QPushButton>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QSignalBlocker>
+#include <QVBoxLayout>
 
 #include "settingswidget.hpp"
 
 using namespace ui;
 
-ui::SettingsWidget::SettingsWidget(QWidget* parent) noexcept
- :  QDialog(parent), tabWidget(this)
-{
-    paint();
+ui::SettingsWidget::SettingsWidget(QWidget *parent) noexcept
+    : QDialog(parent), tabWidget(this) {
+  paint();
 }
 
-void SettingsWidget::showDefaults() noexcept
-{
-    // Prevent emission of the currentChanged signals
-    QSignalBlocker block(this);
+void SettingsWidget::showDefaults() noexcept {
+  // Prevent emission of the currentChanged signals
+  QSignalBlocker block(this);
 
-    // Show default general settings
+  // Show default general settings
+  this->saveSessionBox.setCheckState(Qt::Checked);
+
+  this->dirChangeBox.clear();
+  this->dirChangeBox.addItem("Documents");
+  this->dirChangeBox.addItem("Desktop");
+  this->dirChangeBox.addItem("Home");
+  this->dirChangeBox.insertSeparator(3);
+  this->dirChangeBox.addItem("Select directory...");
+
+  // Show default editor settings
+  this->numberAreaChangeBox.setCheckState(Qt::Checked);
+  this->highlighterChangeBox.setCheckState(Qt::Checked);
+  this->wrappingChangeBox.setCheckState(Qt::Checked);
+}
+
+void SettingsWidget::showSavingSessionOption(bool isOn) noexcept {
+  // Prevent emission of the stateChanged signals
+  QSignalBlocker block(this);
+
+  if (isOn) {
     this->saveSessionBox.setCheckState(Qt::Checked);
+  } else {
+    this->saveSessionBox.setCheckState(Qt::Unchecked);
+  }
+}
 
-    this->dirChangeBox.clear();
-    this->dirChangeBox.addItem("Documents");
-    this->dirChangeBox.addItem("Desktop");
-    this->dirChangeBox.addItem("Home");
-    this->dirChangeBox.insertSeparator(3);
-    this->dirChangeBox.addItem("Select directory...");
+void SettingsWidget::showWorkingDirs(const QStringList &dirs) noexcept {
+  // Prevent emission of the currentChanged signals
+  QSignalBlocker block(this);
 
-    // Show default editor settings
+  this->dirChangeBox.clear();
+  this->dirChangeBox.addItem("Documents");
+  this->dirChangeBox.addItem("Desktop");
+  this->dirChangeBox.addItem("Home");
+  this->dirChangeBox.insertSeparator(3);
+
+  for (const auto &dir : dirs) {
+    this->dirChangeBox.addItem(dir);
+  }
+
+  if (!dirs.isEmpty()) {
+    this->dirChangeBox.insertSeparator(4 + dirs.size());
+  }
+  this->dirChangeBox.addItem("Select directory...");
+}
+
+void SettingsWidget::showCurrentDir(const QString &dir) noexcept {
+  // Prevent emission of the currentChanged signals
+  QSignalBlocker block(this);
+
+  this->dirChangeBox.setCurrentText(dir);
+}
+
+QString SettingsWidget::choseWorkingDir(const QString &currDir) noexcept {
+  return QFileDialog::getExistingDirectory(
+      this, "", currDir,
+      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+}
+
+void SettingsWidget::showNumberAreaOption(bool isOn) noexcept {
+  // Prevent emission of the stateChanged signals
+  QSignalBlocker block(this);
+
+  if (isOn) {
     this->numberAreaChangeBox.setCheckState(Qt::Checked);
+  } else {
+    this->numberAreaChangeBox.setCheckState(Qt::Unchecked);
+  }
+}
+
+void SettingsWidget::showHighlightingOption(bool isOn) noexcept {
+  // Prevent emission of the stateChanged signals
+  QSignalBlocker block(this);
+
+  if (isOn) {
     this->highlighterChangeBox.setCheckState(Qt::Checked);
+  } else {
+    this->highlighterChangeBox.setCheckState(Qt::Unchecked);
+  }
+}
+
+void SettingsWidget::showWrappingOption(bool isOn) noexcept {
+  // Prevent emission of the stateChanged signals
+  QSignalBlocker block(this);
+
+  if (isOn) {
     this->wrappingChangeBox.setCheckState(Qt::Checked);
+  } else {
+    this->wrappingChangeBox.setCheckState(Qt::Unchecked);
+  }
 }
 
-void SettingsWidget::showSavingSessionOption(bool isOn) noexcept
-{
-    // Prevent emission of the stateChanged signals
-    QSignalBlocker block(this);
+void SettingsWidget::showInvalidLicense() noexcept {
+  QMessageBox::critical(this, "License error",
+                        "Invalid license.\n"
+                        "Please, try again.");
+}
 
-    if (isOn) {
-        this->saveSessionBox.setCheckState(Qt::Checked);
-    } else {
-        this->saveSessionBox.setCheckState(Qt::Unchecked);
+void SettingsWidget::showNoLicenseFile() noexcept {
+  QMessageBox::critical(this, "License error",
+                        "No license file.\n"
+                        "Reinstall the application.");
+}
+
+void SettingsWidget::showLicenseInfo(const QString &info) noexcept {
+  this->licenseStatusLabel.setText(info);
+}
+
+void SettingsWidget::closeEvent(QCloseEvent *) {
+  this->regNameLine.clear();
+  this->regNumberLine.clear();
+}
+
+void SettingsWidget::resizeEvent(QResizeEvent *) {
+  this->tabWidget.resize(size());
+}
+
+void ui::SettingsWidget::paint() noexcept {
+  setWindowTitle("Preferences");
+  setMinimumSize(300, 150);
+  setMaximumSize(350, 265);
+
+  this->tabWidget.addTab(makeGeneralSettings(), "General");
+  this->tabWidget.addTab(makeEditorSettings(), "Editor");
+  this->tabWidget.addTab(makeLicenseSettings(), "License");
+  this->tabWidget.resize(380, 180);
+
+  auto resizeWindow = [this](int tabIndex) {
+    if (tabIndex == 0) { // General settings tab selected
+      resize(380, 180);
+    } else if (tabIndex == 1) { // Editor settings tab selected
+      resize(300, 150);
+    } else if (tabIndex == 2) { // License settings tab selected
+      resize(350, 265);
     }
+  };
+
+  connect(&this->tabWidget, &QTabWidget::currentChanged, this, resizeWindow);
 }
 
-void SettingsWidget::showWorkingDirs(const QStringList& dirs) noexcept
-{
-    // Prevent emission of the currentChanged signals
-    QSignalBlocker block(this);
+QWidget *ui::SettingsWidget::makeGeneralSettings() noexcept {
+  auto generalSettings = new QWidget();
+  auto layout = new QGridLayout(generalSettings);
 
-    this->dirChangeBox.clear();
-    this->dirChangeBox.addItem("Documents");
-    this->dirChangeBox.addItem("Desktop");
-    this->dirChangeBox.addItem("Home");
-    this->dirChangeBox.insertSeparator(3);
+  auto dirChangeBoxName = new QLabel("Working directory:");
+  dirChangeBoxName->setObjectName("TabWidgetLabel");
 
-    for (const auto& dir : dirs) {
-        this->dirChangeBox.addItem(dir);
-    }
+  this->dirChangeBox.addItem("Documents");
+  this->dirChangeBox.addItem("Desktop");
+  this->dirChangeBox.addItem("Home");
+  this->dirChangeBox.insertSeparator(3);
+  this->dirChangeBox.addItem("Select directory...");
+  connect(&this->dirChangeBox, &QComboBox::currentTextChanged, this,
+          &SettingsWidget::changeWorkingDirPressed);
 
-    if (!dirs.isEmpty()) {
-        this->dirChangeBox.insertSeparator(4 + dirs.size());
-    }
-    this->dirChangeBox.addItem("Select directory...");
+  this->saveSessionBox.setText("Save last session");
+  this->saveSessionBox.setObjectName("TabWidgetBox");
+  this->saveSessionBox.setCheckState(Qt::Checked);
+  connect(&this->saveSessionBox, &QCheckBox::clicked, this, [this] {
+    emit changeSessionSavingPressed(this->saveSessionBox.isChecked());
+  });
+
+  auto setDefaultsButton = new QPushButton("Set defaults");
+  connect(setDefaultsButton, &QPushButton::pressed, this,
+          &SettingsWidget::setDefaultsPressed);
+
+  layout->addWidget(dirChangeBoxName, 0, 0);
+  layout->addWidget(&this->dirChangeBox, 0, 1);
+  layout->addWidget(&this->saveSessionBox, 1, 0);
+  layout->addWidget(setDefaultsButton, 2, 0);
+  layout->setSpacing(6);
+
+  return generalSettings;
 }
 
-void SettingsWidget::showCurrentDir(const QString& dir) noexcept
-{
-    // Prevent emission of the currentChanged signals
-    QSignalBlocker block(this);
+QWidget *ui::SettingsWidget::makeEditorSettings() noexcept {
+  auto editorSettings = new QWidget();
+  auto layout = new QVBoxLayout(editorSettings);
 
-    this->dirChangeBox.setCurrentText(dir);
+  this->numberAreaChangeBox.setText("Line numbers");
+  this->numberAreaChangeBox.setObjectName("TabWidgetBox");
+  connect(&this->numberAreaChangeBox, &QCheckBox::stateChanged, this, [this] {
+    changeNumberAreaPressed(this->numberAreaChangeBox.isChecked());
+  });
+
+  this->highlighterChangeBox.setText("Highlighter(Disabling this option\n "
+                                     "greatly improves performance)");
+  this->highlighterChangeBox.setObjectName("TabWidgetBox");
+  connect(&this->wrappingChangeBox, &QCheckBox::stateChanged, this, [this] {
+    changeWrappingPressed(this->wrappingChangeBox.isChecked());
+  });
+
+  this->wrappingChangeBox.setText("Wrap lines to editor width");
+  this->wrappingChangeBox.setObjectName("TabWidgetBox");
+  connect(&this->highlighterChangeBox, &QCheckBox::stateChanged, this, [this] {
+    changeHighlighterPressed(this->highlighterChangeBox.isChecked());
+  });
+
+  layout->addWidget(&this->numberAreaChangeBox);
+  layout->addWidget(&this->highlighterChangeBox);
+  layout->addWidget(&this->wrappingChangeBox);
+
+  return editorSettings;
 }
 
-QString SettingsWidget::choseWorkingDir(const QString& currDir) noexcept
-{
-    return QFileDialog::getExistingDirectory(this,
-                                             "",
-                                             currDir,
-                                             QFileDialog::ShowDirsOnly |
-                                             QFileDialog::DontResolveSymlinks);
-}
+QWidget *SettingsWidget::makeLicenseSettings() noexcept {
+  auto licenseSettings = new QWidget();
 
-void SettingsWidget::showNumberAreaOption(bool isOn) noexcept
-{
-    // Prevent emission of the stateChanged signals
-    QSignalBlocker block(this);
+  auto mainLayout = new QVBoxLayout(licenseSettings);
+  auto inputFieldsLayout = new QVBoxLayout;
 
-    if (isOn) {
-        this->numberAreaChangeBox.setCheckState(Qt::Checked);
-    } else {
-        this->numberAreaChangeBox.setCheckState(Qt::Unchecked);
-    }
-}
+  this->licenseStatusLabel.setObjectName("TabWidgetLabel");
 
-void SettingsWidget::showHighlightingOption(bool isOn) noexcept
-{
-    // Prevent emission of the stateChanged signals
-    QSignalBlocker block(this);
+  auto regNameTitle = new QLabel("Registration name: ");
+  regNameTitle->setObjectName("TabWidgetLabel");
 
-    if (isOn) {
-        this->highlighterChangeBox.setCheckState(Qt::Checked);
-    } else {
-        this->highlighterChangeBox.setCheckState(Qt::Unchecked);
-    }
-}
+  auto regNumberTitle = new QLabel("Registration number: ");
+  regNumberTitle->setObjectName("TabWidgetLabel");
 
-void SettingsWidget::showWrappingOption(bool isOn) noexcept
-{
-    // Prevent emission of the stateChanged signals
-    QSignalBlocker block(this);
+  auto commitChangeButton = new QPushButton("Commit");
+  connect(commitChangeButton, &QPushButton::pressed, this, [this] {
+    emit commitLicenseChangePressed(this->regNameLine.text(),
+                                    this->regNumberLine.text());
+  });
 
-    if (isOn) {
-        this->wrappingChangeBox.setCheckState(Qt::Checked);
-    } else {
-        this->wrappingChangeBox.setCheckState(Qt::Unchecked);
-    }
-}
+  inputFieldsLayout->addWidget(regNameTitle);
+  inputFieldsLayout->addWidget(&this->regNameLine);
+  inputFieldsLayout->addWidget(regNumberTitle);
+  inputFieldsLayout->addWidget(&this->regNumberLine);
 
-void SettingsWidget::showInvalidLicense() noexcept
-{
-    QMessageBox::critical(this, "License error", "Invalid license.\n"
-                                                 "Please, try again.");
-}
+  mainLayout->addWidget(&this->licenseStatusLabel);
+  mainLayout->addLayout(inputFieldsLayout);
+  mainLayout->addWidget(commitChangeButton);
 
-void SettingsWidget::showNoLicenseFile() noexcept
-{
-    QMessageBox::critical(this, "License error", "No license file.\n"
-                                                 "Reinstall the application.");
-}
-
-void SettingsWidget::showLicenseInfo(const QString& info) noexcept
-{
-    this->licenseStatusLabel.setText(info);
-}
-
-void SettingsWidget::closeEvent(QCloseEvent*)
-{
-    this->regNameLine.clear();
-    this->regNumberLine.clear();
-}
-
-void SettingsWidget::resizeEvent(QResizeEvent*)
-{
-   this->tabWidget.resize(size());
-}
-
-void ui::SettingsWidget::paint() noexcept
-{
-    setWindowTitle("Preferences");
-    setMinimumSize(300, 150);
-    setMaximumSize(350, 265);
-
-    this->tabWidget.addTab(makeGeneralSettings(), "General");
-    this->tabWidget.addTab(makeEditorSettings(), "Editor");
-    this->tabWidget.addTab(makeLicenseSettings(), "License");
-    this->tabWidget.resize(380, 180);
-
-    auto resizeWindow = [this](int tabIndex) {
-        if (tabIndex == 0) { // General settings tab selected
-            resize(380, 180);
-        } else if (tabIndex == 1) { // Editor settings tab selected
-            resize(300, 150);
-        } else if (tabIndex == 2) { // License settings tab selected
-            resize(350, 265);
-        }
-    };
-
-    connect(&this->tabWidget, &QTabWidget::currentChanged,
-            this, resizeWindow);
-}
-
-QWidget* ui::SettingsWidget::makeGeneralSettings() noexcept
-{
-    auto generalSettings = new QWidget();
-    auto layout = new QGridLayout(generalSettings);
-
-    auto dirChangeBoxName = new QLabel("Working directory:");
-    dirChangeBoxName->setObjectName("TabWidgetLabel");
-
-    this->dirChangeBox.addItem("Documents");
-    this->dirChangeBox.addItem("Desktop");
-    this->dirChangeBox.addItem("Home");
-    this->dirChangeBox.insertSeparator(3);
-    this->dirChangeBox.addItem("Select directory...");
-    connect(&this->dirChangeBox, &QComboBox::currentTextChanged,
-            this, &SettingsWidget::changeWorkingDirPressed);
-
-    this->saveSessionBox.setText("Save last session");
-    this->saveSessionBox.setObjectName("TabWidgetBox");
-    this->saveSessionBox.setCheckState(Qt::Checked);
-    connect(&this->saveSessionBox, &QCheckBox::clicked,
-            this, [this]
-            { emit changeSessionSavingPressed(this->saveSessionBox.isChecked()); });
-
-    auto setDefaultsButton = new QPushButton("Set defaults");
-    connect(setDefaultsButton, &QPushButton::pressed,
-            this, &SettingsWidget::setDefaultsPressed);
-    
-    layout->addWidget(dirChangeBoxName, 0, 0);
-    layout->addWidget(&this->dirChangeBox, 0, 1);
-    layout->addWidget(&this->saveSessionBox, 1, 0);
-    layout->addWidget(setDefaultsButton, 2, 0);
-    layout->setSpacing(6);
-    
-    return generalSettings;
-}
-
-QWidget* ui::SettingsWidget::makeEditorSettings() noexcept
-{
-    auto editorSettings = new QWidget();
-    auto layout = new QVBoxLayout(editorSettings);
-    
-    this->numberAreaChangeBox.setText("Line numbers");
-    this->numberAreaChangeBox.setObjectName("TabWidgetBox");
-    connect(&this->numberAreaChangeBox, &QCheckBox::stateChanged,
-            this, [this]
-            { changeNumberAreaPressed(this->numberAreaChangeBox.isChecked()); });
-
-    this->highlighterChangeBox.setText("Highlighter(Disabling this option\n "
-                                       "greatly improves performance)");
-    this->highlighterChangeBox.setObjectName("TabWidgetBox");
-    connect(&this->wrappingChangeBox, &QCheckBox::stateChanged,
-            this, [this]
-            { changeWrappingPressed(this->wrappingChangeBox.isChecked()); });
-
-    this->wrappingChangeBox.setText("Wrap lines to editor width");
-    this->wrappingChangeBox.setObjectName("TabWidgetBox");
-    connect(&this->highlighterChangeBox, &QCheckBox::stateChanged,
-            this, [this]
-            { changeHighlighterPressed(this->highlighterChangeBox.isChecked()); });
-    
-    layout->addWidget(&this->numberAreaChangeBox);
-    layout->addWidget(&this->highlighterChangeBox);
-    layout->addWidget(&this->wrappingChangeBox);
-    
-    return editorSettings;
-}
-
-QWidget* SettingsWidget::makeLicenseSettings() noexcept
-{
-    auto licenseSettings = new QWidget();
-
-    auto mainLayout = new QVBoxLayout(licenseSettings);
-    auto inputFieldsLayout = new QVBoxLayout;
-
-    this->licenseStatusLabel.setObjectName("TabWidgetLabel");
-
-    auto regNameTitle = new QLabel("Registration name: ");
-    regNameTitle->setObjectName("TabWidgetLabel");
-
-    auto regNumberTitle = new QLabel("Registration number: ");
-    regNumberTitle->setObjectName("TabWidgetLabel");
-
-    auto commitChangeButton = new QPushButton("Commit");
-    connect(commitChangeButton, &QPushButton::pressed,
-            this, [this]
-            { emit commitLicenseChangePressed(this->regNameLine.text(),
-                                              this->regNumberLine.text()); });
-
-    inputFieldsLayout->addWidget(regNameTitle);
-    inputFieldsLayout->addWidget(&this->regNameLine);
-    inputFieldsLayout->addWidget(regNumberTitle);
-    inputFieldsLayout->addWidget(&this->regNumberLine);
-
-    mainLayout->addWidget(&this->licenseStatusLabel);
-    mainLayout->addLayout(inputFieldsLayout);
-    mainLayout->addWidget(commitChangeButton);
-
-    return licenseSettings;
+  return licenseSettings;
 }

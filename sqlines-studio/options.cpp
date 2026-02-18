@@ -17,77 +17,66 @@
 #include "options.h"
 #include "ui_options.h"
 
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QDesktopServices>
 
-Options::Options(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::Options)
-{
-    ui->setupUi(this);
+Options::Options(QWidget *parent) : QDialog(parent), ui(new Ui::Options) {
+  ui->setupUi(this);
 
-    QCoreApplication::setApplicationName("SQLines-Studio");
-    settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "SQLines",
-                             "SQLines-Studio");
-    loadOptions();
+  QCoreApplication::setApplicationName("SQLines-Studio");
+  settings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                           "SQLines", "SQLines-Studio");
+  loadOptions();
 
-    connect(ui->workdirButton, SIGNAL(pressed()), this, SLOT(selectWorkingDirectory()));
-    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(saveDialogData()));
+  connect(ui->workdirButton, SIGNAL(pressed()), this,
+          SLOT(selectWorkingDirectory()));
+  connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(saveDialogData()));
 }
 
-Options::~Options()
-{
-    //SaveOptions();
-    delete settings;
+Options::~Options() {
+  // SaveOptions();
+  delete settings;
 
-    delete ui;
+  delete ui;
 }
-
 
 // select new working directory to save data files
-void Options::selectWorkingDirectory()
-{
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Select new working directory"),
-      workingDirectory, QFileDialog::ShowDirsOnly);
-    if(!dir.isEmpty())
-    {
-      // we will change working directory variable only on Save, now change UI only
-      ui->workdirEdit->setText(dir);
-    }
+void Options::selectWorkingDirectory() {
+  QString dir = QFileDialog::getExistingDirectory(
+      this, tr("Select new working directory"), workingDirectory,
+      QFileDialog::ShowDirsOnly);
+  if (!dir.isEmpty()) {
+    // we will change working directory variable only on Save, now change UI
+    // only
+    ui->workdirEdit->setText(dir);
+  }
 }
 
 // load SQLines Studio options and saved data
-void Options::loadOptions()
-{
-    // get working directory
-    workingDirectory = settings->value(OPTION_WORKDIR).toString();
-    if(workingDirectory.isEmpty())
-    {
-      // reading application data settings
-      workingDirectory = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
-      if(workingDirectory.isEmpty())
-       workingDirectory = QDir::toNativeSeparators(QDir::homePath());
-    }
+void Options::loadOptions() {
+  // get working directory
+  workingDirectory = settings->value(OPTION_WORKDIR).toString();
+  if (workingDirectory.isEmpty()) {
+    // reading application data settings
+    workingDirectory =
+        QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+    if (workingDirectory.isEmpty())
+      workingDirectory = QDir::toNativeSeparators(QDir::homePath());
+  }
 
-    ui->workdirEdit->setText(workingDirectory);
+  ui->workdirEdit->setText(workingDirectory);
 }
 
 // save SQLines Studio options
-void Options::saveOptions()
-{
-    // save working directory
-    settings->setValue(OPTION_WORKDIR, workingDirectory);
-
+void Options::saveOptions() {
+  // save working directory
+  settings->setValue(OPTION_WORKDIR, workingDirectory);
 }
 
 // Save options that was set in the Options dialog
 
-void Options::saveDialogData()
-{
-    // save working directory
-    workingDirectory = ui->workdirEdit->text();
+void Options::saveDialogData() {
+  // save working directory
+  workingDirectory = ui->workdirEdit->text();
 }
-
-
-

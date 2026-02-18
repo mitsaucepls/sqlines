@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,293 +14,274 @@
  * limitations under the License.
  */
 
-// Parameters class - Loads parameters from command line  
+// Parameters class - Loads parameters from command line
 
-#include <stdio.h> 
-#include <string.h>
-#include <string>
-#include <algorithm>
 #include "parameters.h"
-#include "str.h"
 #include "file.h"
 #include "os.h"
+#include "str.h"
+#include <algorithm>
+#include <stdio.h>
+#include <string.h>
+#include <string>
 
 // Constructor
-Parameters::Parameters()
-{
-	_cfg_file = NULL;
-	_cfg_read_ok = false;
-	*_cfg_read_err = '\x0';
+Parameters::Parameters() {
+  _cfg_file = NULL;
+  _cfg_read_ok = false;
+  *_cfg_read_err = '\x0';
 }
 
 // Return the value of the parameter if it is set to True or Yes
-const char* Parameters::GetTrue(const char *name)
-{
-	const char *value = Get(name);
+const char *Parameters::GetTrue(const char *name) {
+  const char *value = Get(name);
 
-	if(value != NULL && *value != '\x0' && 
-		(_stricmp(value, "yes") == 0 || _stricmp(value, "true") == 0))
-		return value;
+  if (value != NULL && *value != '\x0' &&
+      (_stricmp(value, "yes") == 0 || _stricmp(value, "true") == 0))
+    return value;
 
-	return NULL;
+  return NULL;
 }
 
 // Return the value of the parameter if it is set to False or No
-const char* Parameters::GetFalse(const char *name)
-{
-	const char *value = Get(name);
+const char *Parameters::GetFalse(const char *name) {
+  const char *value = Get(name);
 
-	if(value != NULL && *value != '\x0' && 
-		(_stricmp(value, "no") == 0 || _stricmp(value, "false") == 0))
-		return value;
+  if (value != NULL && *value != '\x0' &&
+      (_stricmp(value, "no") == 0 || _stricmp(value, "false") == 0))
+    return value;
 
-	return NULL;
+  return NULL;
 }
 
 // Get integer value or the default
-int Parameters::GetInt(const char *name, int def)
-{
-	const char *value = Get(name);
+int Parameters::GetInt(const char *name, int def) {
+  const char *value = Get(name);
 
-	if(Str::IsSet(value))
-	{
-		int num = def;
-        sscanf(value, "%d", &num);
+  if (Str::IsSet(value)) {
+    int num = def;
+    sscanf(value, "%d", &num);
 
-        if(num != def)
-			return num;
-	}
+    if (num != def)
+      return num;
+  }
 
-	return def;
+  return def;
 }
 
 // Process parameters in command line
-int Parameters::Load(int argc, char** argv)
-{
-	// Load command line parameters
-	int rc = LoadCommandLine(argc, argv);
+int Parameters::Load(int argc, char **argv) {
+  // Load command line parameters
+  int rc = LoadCommandLine(argc, argv);
 
-	return rc;
+  return rc;
 }
 
 // Load command line parameters
-int Parameters::LoadCommandLine(int argc, char** argv)
-{
-	int rc = 0;
+int Parameters::LoadCommandLine(int argc, char **argv) {
+  int rc = 0;
 
-	// Check if any parameters are specified
-	if(argc == 1 || argv == NULL)
-		return -1;
+  // Check if any parameters are specified
+  if (argc == 1 || argv == NULL)
+    return -1;
 
-	std::string comline;
+  std::string comline;
 
-	// Merge all command line parameters into a single string
-	for(int i = 1; i < argc; i++)
-	{
-		comline += argv[i];
-		comline += " ";
-	}
+  // Merge all command line parameters into a single string
+  for (int i = 1; i < argc; i++) {
+    comline += argv[i];
+    comline += " ";
+  }
 
-	// Load parameters from the command line string
-	rc = LoadStr(comline.c_str());
+  // Load parameters from the command line string
+  rc = LoadStr(comline.c_str());
 
-	return rc;
+  return rc;
 }
 
 // Load parameters from string and configuration file
-int Parameters::LoadStr(const char *input)
-{
-	// NULL input is allowed to read from configuration file only
+int Parameters::LoadStr(const char *input) {
+  // NULL input is allowed to read from configuration file only
 
-	// Delete all current parameters
-	_map.clear();
+  // Delete all current parameters
+  _map.clear();
 
-	// Load from string
-	if(input != NULL)
-		LoadStrItem(input);
+  // Load from string
+  if (input != NULL)
+    LoadStrItem(input);
 
-	// Load from configuration file
-	LoadConfigFile();
+  // Load from configuration file
+  LoadConfigFile();
 
-	return 0;
+  return 0;
 }
 
 // Load parameters from a string only
-int Parameters::LoadStrItem(const char *input)
-{
-	if(input == NULL)
-		return -1;
+int Parameters::LoadStrItem(const char *input) {
+  if (input == NULL)
+    return -1;
 
-	const char *cur = input;
+  const char *cur = input;
 
-	// Process parameters
-	while(*cur)
-	{
-		std::string name;
-		std::string value;
+  // Process parameters
+  while (*cur) {
+    std::string name;
+    std::string value;
 
-		cur = Str::SkipSpaces(cur);
+    cur = Str::SkipSpaces(cur);
 
-		// Check for help option specified as ? or /?
-		if(*cur == '?' || (*cur == '-' && cur[1] == '?'))
-		{
-			// Add help option and ignore all remaining options
-			_map.insert(ParametersPair(HELP_PARAMETER, "yes"));
-			break;
-		}
+    // Check for help option specified as ? or /?
+    if (*cur == '?' || (*cur == '-' && cur[1] == '?')) {
+      // Add help option and ignore all remaining options
+      _map.insert(ParametersPair(HELP_PARAMETER, "yes"));
+      break;
+    }
 
-		// Get the parameter name until = or new line
-		while(*cur && *cur != '=' && *cur != '\r' && *cur != '\n' && *cur != '\t')
-		{
-			// Check for parameter without value
-			if(*cur == PARAMETER_START_TOKEN && name.empty() == false)
-				break;
+    // Get the parameter name until = or new line
+    while (*cur && *cur != '=' && *cur != '\r' && *cur != '\n' &&
+           *cur != '\t') {
+      // Check for parameter without value
+      if (*cur == PARAMETER_START_TOKEN && name.empty() == false)
+        break;
 
-			name += *cur;
-			cur++;
-		}
+      name += *cur;
+      cur++;
+    }
 
-		Str::TrimTrailingSpaces(name);
+    Str::TrimTrailingSpaces(name);
 
-		if(*cur == '=')
-			cur++;
+    if (*cur == '=')
+      cur++;
 
-		cur = Str::SkipSpaces(cur);
+    cur = Str::SkipSpaces(cur);
 
-		// Get the parameter value until - or new line
-		while(*cur && *cur != '\r' && *cur != '\n' && *cur != '\t')
-		{
-			// if - is faced, previuos must be space, next mustn't be space (to allow - in directory path, host names etc.)
-			if(*cur == PARAMETER_START_TOKEN && cur[-1] == ' ' && cur[1] != ' ')
-				break;
-			
-			value += *cur;
-			cur++;
-		}
+    // Get the parameter value until - or new line
+    while (*cur && *cur != '\r' && *cur != '\n' && *cur != '\t') {
+      // if - is faced, previuos must be space, next mustn't be space (to allow
+      // - in directory path, host names etc.)
+      if (*cur == PARAMETER_START_TOKEN && cur[-1] == ' ' && cur[1] != ' ')
+        break;
 
-		Str::TrimTrailingSpaces(value);
+      value += *cur;
+      cur++;
+    }
 
-		// Parameter names are case-insensitive, convert to lower case
-		std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    Str::TrimTrailingSpaces(value);
 
-		// Don't add parameter if it already exists (give priority to command line and parameters defined first)
-		if(_map.count(name) == 0)
-		{
-			_map.insert(ParametersPair(name, value));
-		}
-	}
+    // Parameter names are case-insensitive, convert to lower case
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
-	return 0;
+    // Don't add parameter if it already exists (give priority to command line
+    // and parameters defined first)
+    if (_map.count(name) == 0) {
+      _map.insert(ParametersPair(name, value));
+    }
+  }
+
+  return 0;
 }
 
 // Load parameters from a configuration file
-int Parameters::LoadConfigFile()
-{
-	const char *file = Get("-cfg");
+int Parameters::LoadConfigFile() {
+  const char *file = Get("-cfg");
 
-	_cfg_read_ok = false;
-	*_cfg_read_err = '\x0';
+  _cfg_read_ok = false;
+  *_cfg_read_err = '\x0';
 
-	// Use the default file name
-	if(file != NULL)
-		_cfg_file = file;
+  // Use the default file name
+  if (file != NULL)
+    _cfg_file = file;
 
-	if(_cfg_file == NULL)
-		return -1;
+  if (_cfg_file == NULL)
+    return -1;
 
-	// Configuration file size
-	int size = File::GetFileSize(_cfg_file);
+  // Configuration file size
+  int size = File::GetFileSize(_cfg_file);
 
-	if(size == -1)
-	{
-		Os::GetLastErrorText(NULL, _cfg_read_err, CFG_ERROR_LEN);
-		return -1;
-	}
- 
-	char *input = new char[(size_t)size + 1];
+  if (size == -1) {
+    Os::GetLastErrorText(NULL, _cfg_read_err, CFG_ERROR_LEN);
+    return -1;
+  }
 
-	// Get content of the file (without terminating 'x0')
-	if(File::GetContent(_cfg_file, input, (size_t)size) == -1)
-	{
-		Os::GetLastErrorText(NULL, _cfg_read_err, CFG_ERROR_LEN);
-		delete input;
-		return -1;
-	}
+  char *input = new char[(size_t)size + 1];
 
-	input[size] = '\x0';
+  // Get content of the file (without terminating 'x0')
+  if (File::GetContent(_cfg_file, input, (size_t)size) == -1) {
+    Os::GetLastErrorText(NULL, _cfg_read_err, CFG_ERROR_LEN);
+    delete input;
+    return -1;
+  }
 
-	char *cur = input;
+  input[size] = '\x0';
 
-	// Process input
-	while(*cur)
-	{
-		cur = Str::SkipComments(cur);
+  char *cur = input;
 
-		if(*cur == '\x0')
-			break;
+  // Process input
+  while (*cur) {
+    cur = Str::SkipComments(cur);
 
-		std::string name;
-		std::string value;
+    if (*cur == '\x0')
+      break;
 
-		// Get the parameter name until = or space
-		while(*cur && *cur != '=' && *cur != ' ' && *cur != '\t' && *cur != '\n')
-		{
-			name += *cur;
-			cur++;
-		}
+    std::string name;
+    std::string value;
 
-		cur = Str::SkipSpaces(cur);
+    // Get the parameter name until = or space
+    while (*cur && *cur != '=' && *cur != ' ' && *cur != '\t' && *cur != '\n') {
+      name += *cur;
+      cur++;
+    }
 
-		if(*cur == '=')
-			cur++;
+    cur = Str::SkipSpaces(cur);
 
-		// Skip only spaces and tabs (newline means no value set)
-		while(*cur && (*cur == ' ' || *cur == '\t'))
-			cur++;
+    if (*cur == '=')
+      cur++;
 
-		// Get the parameter value until new line or tab
-		while(*cur && *cur != '\r' && *cur != '\n' && *cur != '\t')
-		{
-			value += *cur;
-			cur++;
-		}
+    // Skip only spaces and tabs (newline means no value set)
+    while (*cur && (*cur == ' ' || *cur == '\t'))
+      cur++;
 
-		Str::TrimTrailingSpaces(value);
+    // Get the parameter value until new line or tab
+    while (*cur && *cur != '\r' && *cur != '\n' && *cur != '\t') {
+      value += *cur;
+      cur++;
+    }
 
-		// In configuration file, if the value is not set skip the parameter
-		if(value.empty())
-			continue;
+    Str::TrimTrailingSpaces(value);
 
-		// Parameter names are case-insensitive, convert to lower case
-		std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    // In configuration file, if the value is not set skip the parameter
+    if (value.empty())
+      continue;
 
-		// Don't add parameter if it already exists (give priority to command line and parameters defined first)
-		if(_map.count(name) == 0)
-		{
-			_map.insert(ParametersPair(name, value));
-		}
-	}
+    // Parameter names are case-insensitive, convert to lower case
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
-	_cfg_read_ok = true;
-	delete input;
+    // Don't add parameter if it already exists (give priority to command line
+    // and parameters defined first)
+    if (_map.count(name) == 0) {
+      _map.insert(ParametersPair(name, value));
+    }
+  }
 
-	return 0;
+  _cfg_read_ok = true;
+  delete input;
+
+  return 0;
 }
 
 // Get the value by key
-char* Parameters::Get(const char *key)
-{
-	if(key == NULL)
-		return NULL;
+char *Parameters::Get(const char *key) {
+  if (key == NULL)
+    return NULL;
 
-	std::string skey = key;
+  std::string skey = key;
 
-	// Find the value
-	ParametersMap::iterator i = _map.find(skey);
+  // Find the value
+  ParametersMap::iterator i = _map.find(skey);
 
-	// Key not found
-	if(i == _map.end())
-		return NULL;
+  // Key not found
+  if (i == _map.end())
+    return NULL;
 
-	return (char*)i->second.c_str();
+  return (char *)i->second.c_str();
 }

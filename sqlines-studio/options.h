@@ -18,36 +18,35 @@
 #define OPTIONS_H
 
 #include <QDialog>
-#include <QSortFilterProxyModel>
 #include <QModelIndex>
 #include <QSettings>
+#include <QSortFilterProxyModel>
 
 #define OPTION_WORKDIR "workdir"
 
 namespace Ui {
-    class Options;
+class Options;
 }
 
-class Options : public QDialog
-{
-    Q_OBJECT
+class Options : public QDialog {
+  Q_OBJECT
 
 public:
-    explicit Options(QWidget *parent = 0);
-    ~Options();
+  explicit Options(QWidget *parent = 0);
+  ~Options();
 
 public slots:
-    void selectWorkingDirectory();
-    void saveDialogData();
+  void selectWorkingDirectory();
+  void saveDialogData();
 
 private:
-    Ui::Options *ui;
+  Ui::Options *ui;
 
-    QSettings *settings;
-    QString workingDirectory;
+  QSettings *settings;
+  QString workingDirectory;
 
-    void loadOptions();
-    void saveOptions();
+  void loadOptions();
+  void saveOptions();
 };
 
 #endif // OPTIONS_H

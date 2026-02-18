@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2016 SQLines
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,235 +19,204 @@
 #ifndef sqlines_listwm_h
 #define sqlines_listwm_h
 
-class ListwmItem
-{
+class ListwmItem {
 public:
-	void *value;
-	void *value2;
-	void *value3;
-	void *value4;
-	void *value5;
-	void *value6;
+  void *value;
+  void *value2;
+  void *value3;
+  void *value4;
+  void *value5;
+  void *value6;
 
-    int ivalue;
+  int ivalue;
 
-	ListwmItem *prev;
-	ListwmItem *next;
+  ListwmItem *prev;
+  ListwmItem *next;
 
-	ListwmItem()
-	{
-		value = NULL;
-		value2 = NULL;
-		value3 = NULL;
-		value4 = NULL;
-		value5 = NULL;
-		value6 = NULL;
+  ListwmItem() {
+    value = NULL;
+    value2 = NULL;
+    value3 = NULL;
+    value4 = NULL;
+    value5 = NULL;
+    value6 = NULL;
 
-        ivalue = 0;
+    ivalue = 0;
 
-		prev = NULL;
-		next = NULL;
-	}
+    prev = NULL;
+    next = NULL;
+  }
 };
 
-class ListWM
-{
-	// The first element in the list
-	ListwmItem *first;
-	// The last element in the list
-	ListwmItem *last;
+class ListWM {
+  // The first element in the list
+  ListwmItem *first;
+  // The last element in the list
+  ListwmItem *last;
 
-	// Total number of items in the list
-	int count;
+  // Total number of items in the list
+  int count;
 
 public:
-	// Constructor
-	ListWM()
-	{
-		first = NULL;
-		last = NULL;
-		count = 0;
-	}
+  // Constructor
+  ListWM() {
+    first = NULL;
+    last = NULL;
+    count = 0;
+  }
 
-	// Destructor
-	~ListWM()
-	{
-		DeleteAll();
-	}
+  // Destructor
+  ~ListWM() { DeleteAll(); }
 
-	// Delete all elements from the list
-	void DeleteAll()
-	{
-		ListwmItem *current = first;
-		ListwmItem *next = NULL;
+  // Delete all elements from the list
+  void DeleteAll() {
+    ListwmItem *current = first;
+    ListwmItem *next = NULL;
 
-		// remove list elements
-		while(current)
-		{
-			next = current->next;
-			delete current;
-			current = next;
-		}
-
-		first = NULL;
-		last = NULL;
-		count = 0;
-	}
-
-	// Add a new item to the list
-    void Add(void* value, void* value2 = NULL, void* value3 = NULL, void* value4 = NULL, void* value5 = NULL, void* value6 = NULL)
-	{
-        Add(value, value2, value3, value4, value5, value6, 0);
+    // remove list elements
+    while (current) {
+      next = current->next;
+      delete current;
+      current = next;
     }
 
-    void Add(int ivalue)
-	{
-        Add(NULL, NULL, NULL, NULL, NULL, NULL, ivalue);
+    first = NULL;
+    last = NULL;
+    count = 0;
+  }
+
+  // Add a new item to the list
+  void Add(void *value, void *value2 = NULL, void *value3 = NULL,
+           void *value4 = NULL, void *value5 = NULL, void *value6 = NULL) {
+    Add(value, value2, value3, value4, value5, value6, 0);
+  }
+
+  void Add(int ivalue) { Add(NULL, NULL, NULL, NULL, NULL, NULL, ivalue); }
+
+  void Add(void *value, void *value2, void *value3, void *value4, void *value5,
+           void *value6, int ivalue) {
+    ListwmItem *item = new ListwmItem();
+
+    item->value = value;
+    item->value2 = value2;
+    item->value3 = value3;
+    item->value4 = value4;
+    item->value5 = value5;
+    item->value6 = value6;
+
+    item->ivalue = ivalue;
+
+    // check if it is the first item in the list
+    if (!first) {
+      first = item;
+      item->prev = NULL;
+    } else
+    // otherwise link the previous element with the new and vice versa
+    {
+      last->next = item;
+      item->prev = last;
     }
 
-	void Add(void* value, void* value2, void* value3, void* value4, void* value5, void* value6, int ivalue)
-	{
-		ListwmItem *item = new ListwmItem();
+    last = item;
+    item->next = NULL;
 
-		item->value = value;
-		item->value2 = value2;
-		item->value3 = value3;
-		item->value4 = value4;
-		item->value5 = value5;
-		item->value6 = value6;
+    // increase the number of items in the list
+    count++;
+  }
 
-        item->ivalue = ivalue;
+  // Delete the specified item
+  void DeleteItem(ListwmItem *item) {
+    if (item == NULL || count == 0)
+      return;
 
-		// check if it is the first item in the list
-		if(!first)
-		{
-			first = item;
-			item->prev = NULL;
-		}
-		else
-		// otherwise link the previous element with the new and vice versa
-		{
-			last->next = item;
-			item->prev = last;
-		}
+    if (item == first)
+      first = item->next;
 
-		last = item;
-		item->next = NULL;
+    if (item->prev != NULL)
+      item->prev->next = item->next;
 
-		// increase the number of items in the list
-		count++;
-	}
+    if (item == last)
+      last = item->prev;
 
-	// Delete the specified item
-	void DeleteItem(ListwmItem *item)
-	{
-		if(item == NULL || count == 0)
-			return;
+    if (item->next != NULL)
+      item->next->prev = item->prev;
 
-		if(item == first)
-			first = item->next;
+    delete item;
 
-		if(item->prev != NULL)
-			item->prev->next = item->next;
+    count--;
+  }
 
-		if(item == last)
-			last = item->prev;
+  // Delete items with specified pointers
+  void DeleteItems(void *value, void *value2 = NULL, void *value3 = NULL,
+                   void *value4 = NULL, void *value5 = NULL) {
+    ListwmItem *current = first;
+    ListwmItem *next = NULL;
 
-		if(item->next != NULL)
-			item->next->prev = item->prev;
+    // Remove list elements
+    while (current) {
+      next = current->next;
 
-		delete item;
+      bool del = true;
 
-		count--;
-	}
+      // If input value is not set that means any item with this field removed
+      // if other value matched
+      if ((value != NULL && current->value != value) ||
+          (value2 != NULL && current->value2 != value2) ||
+          (value3 != NULL && current->value3 != value3) ||
+          (value4 != NULL && current->value4 != value4) ||
+          (value5 != NULL && current->value5 != value5))
+        del = false;
 
-	// Delete items with specified pointers
-	void DeleteItems(void* value, void* value2 = NULL, void* value3 = NULL, void* value4 = NULL, void* value5 = NULL)
-	{
-		ListwmItem *current = first;
-		ListwmItem *next = NULL;
+      // Item is removed
+      if (del == true) {
+        if (current == first) {
+          first = next;
 
-		// Remove list elements
-		while(current)
-		{
-			next = current->next;
+          if (next != NULL)
+            next->prev = NULL;
+        } else if (current->prev != NULL)
+          current->prev->next = next;
 
-			bool del = true;
+        // Both condition current == first and == last can be met simulteneously
+        if (current == last) {
+          last = current->prev;
 
-			// If input value is not set that means any item with this field removed if other value matched
-			if((value != NULL && current->value != value) || (value2 != NULL && current->value2 != value2) ||
-				(value3 != NULL && current->value3 != value3) || (value4 != NULL && current->value4 != value4) ||
-				(value5 != NULL && current->value5 != value5))
-				del = false;
+          if (last != NULL)
+            last->next = NULL;
+        } else if (next != NULL)
+          next->prev = current->prev;
 
-			// Item is removed
-			if(del == true)
-			{
-				if(current == first)
-				{
-					first = next;
+        delete current;
 
-					if(next != NULL)
-						next->prev = NULL;
-				}
-				else
-				if(current->prev != NULL)
-					current->prev->next = next;
-				
-				// Both condition current == first and == last can be met simulteneously
-				if(current == last)
-				{
-					last = current->prev;
+        count--;
+      }
 
-					if(last != NULL)
-						last->next = NULL;
-				}
-				else
-				if(next != NULL)
-					next->prev = current->prev;
+      current = next;
+    }
+  }
 
-				delete current;
+  // Get the first value
+  ListwmItem *GetFirst() { return first; }
 
-				count--;
-			}
+  // Get the last value
+  ListwmItem *GetLast() { return last; }
 
-			current = next;
-		}
-	}
+  // Get Nth value
+  ListwmItem *GetNth(int n) {
+    int k = 0;
 
-	// Get the first value
-	ListwmItem* GetFirst()
-	{
-		return first;
-	}
+    for (ListwmItem *i = first; i != NULL; i = i->next) {
+      if (k == n)
+        return i;
 
-	// Get the last value
-	ListwmItem* GetLast()
-	{
-		return last;
-	}
+      k++;
+    }
 
-	// Get Nth value
-	ListwmItem* GetNth(int n)
-	{
-		int k = 0;
+    return NULL;
+  }
 
-		for(ListwmItem* i = first; i != NULL; i = i->next)
-		{
-			if(k == n)
-				return i;
-
-			k++;
-		}		
-
-		return NULL;
-	}
-
-	// Get the total number of items in the list
-	int GetCount() 
-	{ 
-		return count; 
-	}
+  // Get the total number of items in the list
+  int GetCount() { return count; }
 };
 
 #endif // sqlines_listwm_h
