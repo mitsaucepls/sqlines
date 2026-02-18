@@ -19,6 +19,8 @@
 #ifndef sqlines_listt_h
 #define sqlines_listt_h
 
+#include <cstddef>
+
 template <class T> class ListT {
   // The first element in the list
   T *first;

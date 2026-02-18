@@ -20,6 +20,7 @@
 #define sqlines_parameters_h
 
 #include <map>
+#include <string>
 
 #define PARAMETER_START_TOKEN '-'
 

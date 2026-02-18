@@ -23,6 +23,7 @@
   _sqlparser->PrependNoFormat(token, string, L##string, sizeof(string) - 1)
 
 class SqlParser;
+class Token;
 
 class Java {
   SqlParser *_sqlparser;

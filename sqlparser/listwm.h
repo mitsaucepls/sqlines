@@ -19,6 +19,8 @@
 #ifndef sqlines_listwm_h
 #define sqlines_listwm_h
 
+#include <cstddef>
+
 class ListwmItem {
 public:
   void *value;
