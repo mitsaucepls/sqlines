@@ -9743,49 +9743,51 @@ bool SqlParser::ParseFunctionReturns(Token *function) {
 
     ParseDataType(data_type, SQL_SCOPE_FUNC_PARAMS);
   } else
-    // RETURNS in SQL Server, DB2, PostgreSQL, MySQL, Informix, Sybase ADS
-    if (_source != SQL_INFORMIX &&
-        Token::Compare(returns, "RETURNS", L"RETURNS", 7) == true) {
-      // Change to RETURN in Oracle
-      if (_target == SQL_ORACLE)
-        Token::Change(returns, "RETURN", L"RETURN", 6);
+      // Fix according to https://github.com/dmtolpeko/sqlines/pull/26/changes
+    // // RETURNS in SQL Server, DB2, PostgreSQL, MySQL, Informix, Sybase ADS
+    // if (_source != SQL_INFORMIX &&
+    //     Token::Compare(returns, "RETURNS", L"RETURNS", 7) == true) {
+    //   // Change to RETURN in Oracle
+    //   if (_target == SQL_ORACLE)
+    //     Token::Change(returns, "RETURN", L"RETURN", 6);
 
-      // Return data type
-      Token *data_type = GetNextToken();
-      Token *data_type_end = data_type;
+    //   // Return data type
+    //   Token *data_type = GetNextToken();
+    //   Token *data_type_end = data_type;
 
-      // Check for 'void' data type in PostgreSQL meaning stored procedure
-      if (Token::Compare(data_type, "VOID", L"VOID", 4) == true) {
-        // If not PostgreSQL convert to procedure and remove return clause
-        if (_target != SQL_POSTGRESQL) {
-          Token::Change(function, "PROCEDURE", L"PROCEDURE", 9);
-          Token::Remove(returns, data_type);
-        }
-      } else {
-        ParseDataType(data_type, SQL_SCOPE_FUNC_PARAMS);
-        data_type_end = GetLastToken();
+    //   // Check for 'void' data type in PostgreSQL meaning stored procedure
+    //   if (Token::Compare(data_type, "VOID", L"VOID", 4) == true) {
+    //     // If not PostgreSQL convert to procedure and remove return clause
+    //     if (_target != SQL_POSTGRESQL) {
+    //       Token::Change(function, "PROCEDURE", L"PROCEDURE", 9);
+    //       Token::Remove(returns, data_type);
+    //     }
+    //   } else {
+    //     ParseDataType(data_type, SQL_SCOPE_FUNC_PARAMS);
+    //     data_type_end = GetLastToken();
 
-        if (data_type->data_subtype == TOKEN_DT2_INT ||
-            data_type->data_subtype == TOKEN_DT2_BOOL)
-          _spl_return_int = true;
-      }
+    //     if (data_type->data_subtype == TOKEN_DT2_INT ||
+    //         data_type->data_subtype == TOKEN_DT2_BOOL)
+    //       _spl_return_int = true;
+    //   }
 
-      // Function is converted to procedure
-      if (_spl_func_to_proc) {
-        // SQL Server stored procedure allows returning integer value
-        if (Target(SQL_SQL_SERVER)) {
-          if (!_spl_return_int) {
-            PREPEND_NOFMT(_spl_param_close, ", @retval ");
-            PrependCopy(_spl_param_close, data_type, data_type_end);
-            PREPEND_FMT(_spl_param_close, " output", data_type);
-          }
+    //   // Function is converted to procedure
+    //   if (_spl_func_to_proc) {
+    //     // SQL Server stored procedure allows returning integer value
+    //     if (Target(SQL_SQL_SERVER)) {
+    //       if (!_spl_return_int) {
+    //         PREPEND_NOFMT(_spl_param_close, ", @retval ");
+    //         PrependCopy(_spl_param_close, data_type, data_type_end);
+    //         PREPEND_FMT(_spl_param_close, " output", data_type);
+    //       }
 
-          Token::Remove(returns, data_type_end);
-        }
-      }
-    } else
+    //       Token::Remove(returns, data_type_end);
+    //     }
+    //   }
+    // } else
       // RETURNS or RETURNING in Informix
-      if (Token::Compare(returns, "RETURNING", L"RETURNING", 9) == true) {
+      if (Token::Compare(returns, "RETURNING", L"RETURNING", 9) == true ||
+            Token::Compare(returns, "RETURNS", L"RETURNS", 7) == true ){
         _spl_returns = returns;
 
         ParseInformixReturns(returns);
