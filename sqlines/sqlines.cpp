@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctime>
 #include "sqlines.h"
 #include "filelist.h"
 #include "file.h"
@@ -46,8 +47,6 @@ Sqlines::Sqlines()
 int Sqlines::Run(int argc, char** argv)
 {
 	_total_files = 0;
-
-	_license.Set(argv[0]);
 
 	// Read and validate parameters
 	int rc = SetParameters(argc, argv);
@@ -318,18 +317,6 @@ int Sqlines::SetParameters(int argc, char **argv)
 	if(_stdin == false)
 	{
 		_log.Log("\n%s\n%s", SQLINES_VERSION, SQLINES_COPYRIGHT);
-
-		// Show the license message if required
-		if(_license.IsLicenseCheckRequired())
-		{
-			if(_license.IsEmpty())
-			{
-				_log.Log("\n\nThe product is FOR EVALUATION USE ONLY.");
-				SetParserOption(_parser, SQLINES_EVAL_MODE, "TRUE");
-			}
-			else
-				_log.Log("\n\nThe product is licensed to %s.", _license.GetName().c_str());
-		}
 	}
 
 	// Get -s option

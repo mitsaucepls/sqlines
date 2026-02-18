@@ -20,7 +20,6 @@
 #include <string>
 #include "applog.h"
 #include "parameters.h"
-#include "license.h"
 
 #define SQLINES_VERSION             "SQLines 3.1.330 - SQL Assessment and Conversion Tool."
 #define SQLINES_COPYRIGHT           "Copyright (c) 2020 SQLines. All Rights Reserved."
@@ -68,9 +67,6 @@ class Sqlines
     Parameters _parameters;
     // Logger
     AppLog _log;
-
-	// License information
-	License _license;
 
 public:
     Sqlines();
