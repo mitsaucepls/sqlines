@@ -8280,6 +8280,14 @@ bool SqlParser::ParseRevokeStatement(Token *revoke) {
       if (_target == SQL_POSTGRESQL)
         Token::Change(name, "PLPGSQL", L"PLPGSQL", 7);
     }
+  } else {
+    // ALL, SELECT, INSERT etc. - consume ON object_name before FROM
+    Token *on = GetNextWordToken("ON", L"ON", 2);
+
+    if (on != NULL) {
+      // Consume object name (may include schema like "informix".table)
+      /*Token *object */ (void)GetNextToken();
+    }
   }
 
   // FROM grantee
