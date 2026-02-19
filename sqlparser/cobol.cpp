@@ -16,8 +16,8 @@
 
 // COBOL language parser
 
-#include "cobol.h"
 #include "sqlparser.h"
+#include "cobol.h"
 #include <stdio.h>
 #include <string.h>
 

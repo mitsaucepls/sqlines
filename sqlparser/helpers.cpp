@@ -16,9 +16,9 @@
 
 // SQLParser helper functions
 
+#include "sqlparser.h"
 #include "cobol.h"
 #include "file.h"
-#include "sqlparser.h"
 #include "str.h"
 #include <algorithm>
 #include <stdio.h>
@@ -659,10 +659,16 @@ void SqlParser::ConvertSchemaName(Token *token, TokenStr &ident, size_t *len) {
 
   *len = *len + 1;
 
-  // Schema name is removed
-  if (_option_rems == true)
+  // Automatically strip "informix". schema when source is Informix
+  if (_source == SQL_INFORMIX &&
+      (schema.Compare("\"informix\".", L"\"informix\".", 11) == true ||
+       schema.Compare("informix.", L"informix.", 9) == true))
     schema.Clear();
   else
+    // Schema name is removed
+    if (_option_rems == true)
+      schema.Clear();
+    else
     // dbo. in SQL Server, Sybase ASE
     if (Source(SQL_SQL_SERVER, SQL_SYBASE) &&
         !Target(SQL_SQL_SERVER, SQL_SYBASE) &&
